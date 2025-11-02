@@ -3848,6 +3848,7 @@ body {
   align-items: center;
   gap: 2px;
   cursor: pointer;
+  background: none;
 }
 
 .products__catalog__products__list__slider__item__switch__img {

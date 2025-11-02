@@ -1,250 +1,41 @@
 "use strict";
 document.addEventListener("DOMContentLoaded", () => {
-  const animalsContainer = document.getElementById("animals-list");
-  const isCatalogPage = window.location.pathname.includes("catalog.html");
-  const isArticlesPage = window.location.pathname.includes(
-    "articles__pages.html"
-  );
-  const catalogTitle = document.querySelector(".products__catalog__title");
-  const articlesTitle = document.querySelector(".articles__pages__title");
-  const filterTypeList = document.querySelector(
-    ".products__catalog__filter__type__list"
-  );
-
-  function handleUrlParamsAfterLoad() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const animalParam = urlParams.get("animal");
-    if (animalParam) {
-      const activeLink = document.querySelector(
-        `[data-animal-type="${animalParam}"]`
-      );
-      if (activeLink) {
-        activeLink.click();
-
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
-      }
-    }
-  }
-
-  function resetFiltersOnPageLoad() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (!urlParams.has("animal")) {
-      const activeLinks = document.querySelectorAll(
-        ".animal__category__catalog__active, " +
-          ".products__catalog__filter__type__indicator__active, " +
-          ".products__catalog__filter__brand__indicator__active"
-      );
-
-      for (const link of activeLinks) {
-        link.classList.remove(
-          "animal__category__catalog__active",
-          "products__catalog__filter__type__indicator__active",
-          "products__catalog__filter__brand__indicator__active"
-        );
-      }
-
-      const promoIndicator = document.querySelector(
-        ".promotional__item__indicator"
-      );
-      if (promoIndicator) {
-        promoIndicator.classList.remove("promotional__item__indicator__active");
-      }
-
-      if (catalogTitle) {
-        catalogTitle.textContent = "Каталог товаров";
-      }
-    }
-  }
+  let animalList = [];
 
   fetch("https://oliver1ck.pythonanywhere.com/api/get_animals_list/")
     .then((response) => {
-      if (!response.ok)
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`HTTP status: ${response.status}`);
+      }
       return response.json();
     })
     .then((data) => {
-      if (!data.results || data.results.length === 0) {
-        if (animalsContainer)
-          animalsContainer.innerHTML = "<p>Нет данных о категориях</p>";
-        return;
-      }
-
-      if (animalsContainer) animalsContainer.innerHTML = "";
-
-      if (isCatalogPage) {
-        initializeSidebarAnimalFilters(data.results);
-        document.dispatchEvent(new CustomEvent("loadBrandsRequest"));
-      }
-
-      for (const animal of data.results) {
-        const animalType = animal.type.toLowerCase();
-        const link = createAnimalCategoryElement(animal);
-        handleAnimalCategoryClick(link, animalType, animal.id);
-
-        if (animalsContainer) animalsContainer.appendChild(link);
-      }
-
-      if (isCatalogPage) {
-        document.addEventListener("productsLoaded", handleUrlParamsAfterLoad, {
-          once: true,
-        });
-      }
-
-      if (isArticlesPage) {
-        document.addEventListener("articlesLoaded", handleUrlParamsAfterLoad, {
-          once: true,
-        });
-      }
+      console.log("animal list:", data);
+      animalList = data.results;
+      animalFilter(animalList);
     })
     .catch((error) => {
-      console.error("Error loading animals:", error);
-      if (animalsContainer)
-        animalsContainer.innerHTML = `<p>Ошибка загрузки: ${error.message}</p>`;
+      console.error("Ошибка fetch:", error);
     });
 
-  function createAnimalCategoryElement(animal) {
-    const animalType = animal.type.toLowerCase();
-    const link = document.createElement("a");
+  window.animalFilter = function (animalList) {
+    const animalContainer = document.getElementById("animals-list");
 
-    let targetPage = "catalog.html";
+    for (const category of animalList) {
+      const animalItem = document.createElement("a");
+      animalItem.className = "animal__category__catalog";
+      animalItem.href = `catalog.html?animal=${category.type.toLowerCase()}`;
+      animalItem.innerHTML = `
+            <img src="${category.image}" alt="${category.title}">
+            <p class="animal__category__catalog__title">${category.type}</p>
+            `;
 
-    if (isArticlesPage) {
-      targetPage = "articles__pages.html";
+      animalContainer.appendChild(animalItem);
+
+      animalItem.addEventListener("click", function () {
+        const selectedCategory = category.type.toLowerCase();
+        localStorage.setItem("autoFilterCategory", selectedCategory);
+      });
     }
-    if (isCatalogPage) {
-      targetPage = "catalog.html";
-    }
-
-    link.href =
-      isCatalogPage || isArticlesPage
-        ? `#${animalType}`
-        : `${targetPage}?animal=${animalType}`;
-    link.className = "animal__category__catalog";
-    link.dataset.animalType = animalType;
-    link.dataset.animalId = animal.id;
-    link.innerHTML = `
-      <img src="${animal.image}" alt="${animal.type}">
-      <p class="animal__category__catalog__title">${animal.type}</p>
-    `;
-
-    return link;
-  }
-
-  function handleAnimalCategoryClick(link, animalType, animalId) {
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-
-      if (!isCatalogPage && !isArticlesPage) {
-        window.location.href = link.href;
-        return;
-      }
-
-      const allCategories = document.querySelectorAll(
-        ".animal__category__catalog"
-      );
-      for (const category of allCategories) {
-        category.classList.remove("animal__category__catalog__active");
-      }
-      link.classList.add("animal__category__catalog__active");
-
-      if (isCatalogPage) {
-        document.dispatchEvent(
-          new CustomEvent("animalFilterClicked", {
-            detail: { animalType },
-          })
-        );
-        updateCatalogTitle(animalType);
-      } else if (isArticlesPage) {
-        document.dispatchEvent(
-          new CustomEvent("animalFilterClickedArticles", {
-            detail: { animalType, animalId },
-          })
-        );
-        updateArticlesTitle(animalType);
-      }
-    });
-  }
-
-  function createSidebarFilterItem(animal) {
-    const item = document.createElement("li");
-    item.className = "products__catalog__filter__type__list__item";
-    item.dataset.animalType = animal.type.toLowerCase();
-    item.innerHTML = `
-      <div class="products__catalog__filter__type__indicator"></div>
-      <p class="products__catalog__filter__type__txt">${animal.type}</p>
-    `;
-    return item;
-  }
-
-  function handleSidebarFilterClick(item, animalType) {
-    item.addEventListener("click", () => {
-      const allItems = document.querySelectorAll(
-        ".products__catalog__filter__type__list__item"
-      );
-      for (const el of allItems) {
-        el.querySelector(
-          ".products__catalog__filter__type__indicator"
-        )?.classList.remove(
-          "products__catalog__filter__type__indicator__active"
-        );
-      }
-
-      item
-        .querySelector(".products__catalog__filter__type__indicator")
-        ?.classList.add("products__catalog__filter__type__indicator__active");
-
-      document.dispatchEvent(
-        new CustomEvent("animalFilterClicked", {
-          detail: { animalType },
-        })
-      );
-    });
-  }
-
-  function initializeSidebarAnimalFilters(animals) {
-    if (!filterTypeList) return;
-
-    filterTypeList.innerHTML = "";
-
-    for (const animal of animals) {
-      const item = createSidebarFilterItem(animal);
-      handleSidebarFilterClick(item, animal.type.toLowerCase());
-      filterTypeList.appendChild(item);
-    }
-  }
-
-  function updateCatalogTitle(animalType) {
-    if (!catalogTitle) return;
-
-    const animalNames = {
-      кошки: "кошек",
-      собаки: "собак",
-      грызуны: "грызунов",
-      птицы: "птиц",
-      рыбы: "рыб",
-    };
-
-    catalogTitle.textContent = animalType
-      ? `Каталог товаров для ${animalNames[animalType] || animalType}`
-      : "Каталог товаров";
-  }
-
-  function updateArticlesTitle(animalType) {
-    if (!articlesTitle) return;
-
-    const animalNames = {
-      кошки: "кошках",
-      собаки: "собаках",
-      грызуны: "грызунах",
-      птицы: "птицах",
-      рыбы: "рыбках",
-    };
-
-    articlesTitle.textContent = animalType
-      ? `Полезные статьи о ${animalNames[animalType] || animalType}`
-      : "Статьи";
-  }
-
-  resetFiltersOnPageLoad();
+  };
 });
