@@ -1,16 +1,8 @@
 "use strict";
-window.filterCategoryAnimal = function () {
+window.filterCategoryAnimal = function (allProducts) {
   const filterCategoryAnimalItems = document.querySelectorAll(
     ".products__catalog__filter__type__list__item"
   );
-
-  const animalFilterMap = {
-    собаки: "1",
-    кошки: "2",
-    грызуны: "3",
-    птицы: "4",
-    рыбки: "5",
-  };
 
   for (const animalItem of filterCategoryAnimalItems) {
     animalItem.addEventListener("click", function (e) {
@@ -44,6 +36,34 @@ window.filterCategoryAnimal = function () {
         .trim()
         .toLowerCase();
 
+      let animalId = null;
+
+      for (const product of allProducts) {
+        const matchingAnimal = product.animal.find(
+          (animal) => animal.type.toLowerCase() === selectedCategory
+        );
+
+        if (matchingAnimal) {
+          animalId = matchingAnimal.id;
+        }
+      }
+
+      if (!animalId) {
+        console.error("Не удалось найти ID для категории:", selectedCategory);
+        console.log(
+          "Доступные животные в товарах:",
+          allProducts.map((p) => p.animal)
+        );
+        return;
+      }
+
+      console.log(
+        "Найден ID животного:",
+        animalId,
+        "для категории:",
+        selectedCategory
+      );
+
       const animalItems = document.querySelectorAll(
         ".animal__category__catalog"
       );
@@ -58,13 +78,6 @@ window.filterCategoryAnimal = function () {
           animalItem.classList.add("animal__category__catalog__active");
           break;
         }
-      }
-
-      const animalId = animalFilterMap[selectedCategory];
-
-      if (!animalId) {
-        console.error("Неизвестная категория:", selectedCategory);
-        return;
       }
 
       const apiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&page=1`;
