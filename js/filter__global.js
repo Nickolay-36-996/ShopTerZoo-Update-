@@ -54,6 +54,16 @@ document.addEventListener("DOMContentLoaded", () => {
         animalContainer.appendChild(animalItem);
 
         animalItem.addEventListener("click", function () {
+          const allAnimalItems = document.querySelectorAll(
+            ".animal__category__catalog"
+          );
+
+          for (const item of allAnimalItems) {
+            item.classList.remove("animal__category__catalog__active");
+          }
+
+          this.classList.add("animal__category__catalog__active");
+
           const selectedCategory = category.type.toLowerCase();
           const filterItems = document.querySelectorAll(
             ".products__catalog__filter__type__list__item"

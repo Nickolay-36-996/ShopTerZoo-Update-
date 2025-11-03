@@ -20,6 +20,7 @@ window.filterCategoryAnimal = function () {
       const allIndicators = document.querySelectorAll(
         ".products__catalog__filter__type__indicator"
       );
+
       for (const indicator of allIndicators) {
         indicator.classList.remove(
           "products__catalog__filter__type__indicator__active"
@@ -29,6 +30,7 @@ window.filterCategoryAnimal = function () {
       const currentIndicator = this.querySelector(
         ".products__catalog__filter__type__indicator"
       );
+
       if (currentIndicator) {
         currentIndicator.classList.add(
           "products__catalog__filter__type__indicator__active"
@@ -41,6 +43,22 @@ window.filterCategoryAnimal = function () {
       const selectedCategory = categoryNameElement.textContent
         .trim()
         .toLowerCase();
+
+      const animalItems = document.querySelectorAll(
+        ".animal__category__catalog"
+      );
+      for (const animalItem of animalItems) {
+        const animalText = animalItem
+          .querySelector(".animal__category__catalog__title")
+          .textContent.toLowerCase();
+        if (animalText === selectedCategory) {
+          for (const item of animalItems) {
+            item.classList.remove("animal__category__catalog__active");
+          }
+          animalItem.classList.add("animal__category__catalog__active");
+          break;
+        }
+      }
 
       const animalId = animalFilterMap[selectedCategory];
 
