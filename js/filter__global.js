@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
       for (const category of animalList) {
         const animalItem = document.createElement("a");
         animalItem.className = "animal__category__catalog";
+        animalItem.style.opacity = "1";
         animalItem.href = `catalog.html?animal=${category.type.toLowerCase()}`;
         animalItem.innerHTML = `
             <img src="${category.image}" alt="${category.title}">
