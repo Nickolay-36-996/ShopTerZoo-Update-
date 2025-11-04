@@ -185,6 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
         currentPageNum = i;
 
         const pageUrl = `${filterUrl}&page=${i}`;
+        
         fetch(pageUrl)
           .then((response) => {
             if (!response.ok) {

@@ -3,7 +3,11 @@ window.filterCategoryAnimal = function () {
   const filterCategoryAnimalItems = document.querySelectorAll(
     ".products__catalog__filter__type__list__item"
   );
+  const filterTypeList = document.querySelector(
+    ".products__catalog__filter__type__list"
+  );
   const catalogTitle = document.querySelector(".products__catalog__title");
+  const typeTitle = document.querySelector(".products__catalog__filter__title");
 
   const animalFilterMap = {
     собаки: "1",
@@ -97,6 +101,105 @@ window.filterCategoryAnimal = function () {
         .catch((error) => {
           console.error("Ошибка загрузки отфильтрованных товаров:", error);
         });
+
+      function updateTypeList() {
+        const productTypesMap = {
+          собаки: [
+            { category: "Корм", subcategory: ["Влажный корм", "Сухой корм"] },
+            { category: "Игрушки" },
+            { category: "Переноски" },
+            { category: "Посуда" },
+            { category: "Клетки" },
+          ],
+
+          кошки: [
+            { category: "Корм", subcategory: ["Влажный корм", "Сухой корм"] },
+            {
+              category: "Наполнители",
+              subcategory: ["Впитывающий", "Древесный", "Комкующийся"],
+            },
+            { category: "Игрушки" },
+            { category: "Переноски" },
+            { category: "Гигиена и косметика" },
+            { category: "Посуда" },
+            { category: "Когтеточки" },
+          ],
+
+          грызуны: [
+            { category: "Корм", subcategory: ["Сухой корм"] },
+            {
+              category: "Наполнители",
+              subcategory: ["Сено", "Песок"],
+            },
+            { category: "Акссесуары" },
+            { category: "Посуда" },
+            { category: "Клетки" },
+          ],
+
+          птицы: [
+            { category: "Корм", subcategory: ["Сухой корм"] },
+            { category: "Акссесуары" },
+            { category: "Посуда" },
+            { category: "Клетки" },
+          ],
+
+          рыбки: [
+            { category: "Корм", subcategory: ["Корм для рыб"] },
+            { category: "Акссесуары" },
+            { category: "Аквариумы" },
+            { category: "Оборудование" },
+          ],
+        };
+
+        const categoryTypes = productTypesMap[selectedCategory];
+
+        if (typeTitle) {
+          typeTitle.textContent = "Тип товара";
+        }
+
+        if (filterTypeList && categoryTypes) {
+          filterTypeList.innerHTML = "";
+
+          for (const type of categoryTypes) {
+            if (type.subcategory && type.subcategory.length > 0) {
+              const isSubcategory = type.subcategory
+                .map((item) => {
+                  return `
+                <div class="food__subcategory__item">
+                <div class="products__catalog__filter__brand__indicator"></div>
+                <p class="products__catalog__filter__brand__txt">${item}</p>
+                </div>
+                `;
+                })
+                .join("");
+
+              const listItem = document.createElement("li");
+              listItem.className = "food__category__item";
+              listItem.innerHTML = `
+              <div class="food__category__contain">
+              <div class="products__catalog__filter__type__indicator"></div>
+              <p class="products__catalog__filter__type__txt">${type.category}</p>
+              </div>
+              <div class="food__subcategories__list">${isSubcategory}</div>
+              `;
+
+              filterTypeList.appendChild(listItem);
+            } else {
+              const listItem = document.createElement("li");
+              listItem.className =
+                "products__catalog__filter__type__list__item";
+              listItem.innerHTML = `
+            <div class="products__catalog__filter__type__indicator"></div>
+            <p class="products__catalog__filter__type__txt">${type.category}</p>
+            `;
+
+              filterTypeList.appendChild(listItem);
+            }
+          }
+        }
+      }
+
+      updateTypeList();
     });
   }
 };
