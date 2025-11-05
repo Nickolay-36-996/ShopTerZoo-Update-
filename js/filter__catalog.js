@@ -142,6 +142,8 @@ window.filterCategoryAnimal = function () {
           return response.json();
         })
         .then((data) => {
+          updateTypeList(selectedCategory, data.results, apiUrl, animalId);
+
           if (typeof window.productItems === "function") {
             window.productItems(data.results);
           }
@@ -153,7 +155,7 @@ window.filterCategoryAnimal = function () {
           console.error("Ошибка загрузки отфильтрованных товаров:", error);
         });
 
-      function updateTypeList(selectedCategory) {
+      function updateTypeList(selectedCategory, data, apiUrl) {
         const categoryTypes = productTypesMap[selectedCategory];
 
         if (typeTitle) {
@@ -208,12 +210,58 @@ window.filterCategoryAnimal = function () {
             `;
 
               filterTypeList.appendChild(listItem);
+
+              listItem.addEventListener("click", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const typeElement = this.querySelector(
+                  ".products__catalog__filter__type__txt"
+                );
+                const typeName = typeElement.textContent.trim();
+
+                const foundProduct = data.find((item) => {
+                  return item.category && item.category.name === typeName;
+                });
+
+                const typeId =
+                  foundProduct && foundProduct.category
+                    ? foundProduct.category.id
+                    : "";
+
+                if (typeId) {
+                  const typeApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&category__in=${typeId}&page=1`;
+
+                  fetch(typeApiUrl)
+                    .then((response) => {
+                      if (!response.ok)
+                        throw new Error(`HTTP status: ${response.status}`);
+                      return response.json();
+                    })
+                    .then((filteredData) => {
+                      if (typeof window.productItems === "function") {
+                        window.productItems(filteredData.results);
+                      }
+                      if (typeof window.updatePagination === "function") {
+                        window.updatePagination(
+                          filteredData,
+                          1,
+                          typeApiUrl.replace("&page=1", "")
+                        );
+                      }
+                    })
+                    .catch((error) => {
+                      console.error(
+                        "Ошибка загрузки отфильтрованных товаров:",
+                        error
+                      );
+                    });
+                }
+              });
             }
           }
         }
       }
-
-      updateTypeList(selectedCategory);
     });
   }
 };
