@@ -200,6 +200,37 @@ window.filterCategoryAnimal = function () {
               `;
 
               filterTypeList.appendChild(listItem);
+
+              const subcategoryItems = filterTypeList.querySelectorAll(
+                ".food__subcategory__item"
+              );
+              for (const subcategoryItem of subcategoryItems) {
+                subcategoryItem.addEventListener("click", function (e) {
+                  e.stopPropagation();
+                  e.preventDefault();
+
+                  const currentSubcategoryIndicator = this.querySelector(
+                    ".products__catalog__filter__brand__indicator"
+                  );
+
+                  if (currentSubcategoryIndicator) {
+                    const isActive =
+                      currentSubcategoryIndicator.classList.contains(
+                        "products__catalog__filter__brand__indicator__active"
+                      );
+
+                    if (isActive) {
+                      currentSubcategoryIndicator.classList.remove(
+                        "products__catalog__filter__brand__indicator__active"
+                      );
+                    } else {
+                      currentSubcategoryIndicator.classList.add(
+                        "products__catalog__filter__brand__indicator__active"
+                      );
+                    }
+                  }
+                });
+              }
             } else {
               const listItem = document.createElement("li");
               listItem.className =
