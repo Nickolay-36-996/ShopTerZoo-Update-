@@ -215,6 +215,23 @@ window.filterCategoryAnimal = function () {
                 e.preventDefault();
                 e.stopPropagation();
 
+                const typeIndicators = filterTypeList.querySelectorAll(
+                  ".products__catalog__filter__type__indicator"
+                );
+                for (const indicator of typeIndicators) {
+                  indicator.classList.remove(
+                    "products__catalog__filter__type__indicator__active"
+                  );
+                }
+                const currentIndicator = this.querySelector(
+                  ".products__catalog__filter__type__indicator"
+                );
+                if (currentIndicator) {
+                  currentIndicator.classList.add(
+                    "products__catalog__filter__type__indicator__active"
+                  );
+                }
+
                 const typeElement = this.querySelector(
                   ".products__catalog__filter__type__txt"
                 );
