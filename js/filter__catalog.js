@@ -3,8 +3,11 @@ window.filterCategoryAnimal = function () {
   const filterCategoryAnimalItems = document.querySelectorAll(
     ".products__catalog__filter__type__list__item"
   );
-  const filterTypeList = document.querySelector(
+  const filterAnimalList = document.querySelector(
     ".products__catalog__filter__type__list"
+  );
+  const filterContainer = document.querySelector(
+    ".products__catalog__filter__type"
   );
   const catalogTitle = document.querySelector(".products__catalog__title");
   const typeTitle = document.querySelector(".products__catalog__filter__title");
@@ -23,6 +26,54 @@ window.filterCategoryAnimal = function () {
     грызуны: "Каталог товаров для грызунов",
     птицы: "Каталог товаров для птиц",
     рыбки: "Каталог товаров для рыбок",
+  };
+
+  const productTypesMap = {
+    собаки: [
+      { category: "Корм", subcategory: ["Влажный корм", "Сухой корм"] },
+      { category: "Игрушки" },
+      { category: "Переноски" },
+      { category: "Посуда" },
+      { category: "Клетки" },
+    ],
+
+    кошки: [
+      { category: "Корм", subcategory: ["Влажный корм", "Сухой корм"] },
+      {
+        category: "Наполнители",
+        subcategory: ["Впитывающий", "Древесный", "Комкующийся"],
+      },
+      { category: "Игрушки" },
+      { category: "Переноски" },
+      { category: "Гигиена и косметика" },
+      { category: "Посуда" },
+      { category: "Когтеточки" },
+    ],
+
+    грызуны: [
+      { category: "Корм", subcategory: ["Сухой корм"] },
+      {
+        category: "Наполнители",
+        subcategory: ["Сено", "Песок"],
+      },
+      { category: "Акссесуары" },
+      { category: "Посуда" },
+      { category: "Клетки" },
+    ],
+
+    птицы: [
+      { category: "Корм", subcategory: ["Сухой корм"] },
+      { category: "Акссесуары" },
+      { category: "Посуда" },
+      { category: "Клетки" },
+    ],
+
+    рыбки: [
+      { category: "Корм", subcategory: ["Корм для рыб"] },
+      { category: "Акссесуары" },
+      { category: "Аквариумы" },
+      { category: "Оборудование" },
+    ],
   };
 
   for (const animalItem of filterCategoryAnimalItems) {
@@ -102,63 +153,26 @@ window.filterCategoryAnimal = function () {
           console.error("Ошибка загрузки отфильтрованных товаров:", error);
         });
 
-      function updateTypeList() {
-        const productTypesMap = {
-          собаки: [
-            { category: "Корм", subcategory: ["Влажный корм", "Сухой корм"] },
-            { category: "Игрушки" },
-            { category: "Переноски" },
-            { category: "Посуда" },
-            { category: "Клетки" },
-          ],
-
-          кошки: [
-            { category: "Корм", subcategory: ["Влажный корм", "Сухой корм"] },
-            {
-              category: "Наполнители",
-              subcategory: ["Впитывающий", "Древесный", "Комкующийся"],
-            },
-            { category: "Игрушки" },
-            { category: "Переноски" },
-            { category: "Гигиена и косметика" },
-            { category: "Посуда" },
-            { category: "Когтеточки" },
-          ],
-
-          грызуны: [
-            { category: "Корм", subcategory: ["Сухой корм"] },
-            {
-              category: "Наполнители",
-              subcategory: ["Сено", "Песок"],
-            },
-            { category: "Акссесуары" },
-            { category: "Посуда" },
-            { category: "Клетки" },
-          ],
-
-          птицы: [
-            { category: "Корм", subcategory: ["Сухой корм"] },
-            { category: "Акссесуары" },
-            { category: "Посуда" },
-            { category: "Клетки" },
-          ],
-
-          рыбки: [
-            { category: "Корм", subcategory: ["Корм для рыб"] },
-            { category: "Акссесуары" },
-            { category: "Аквариумы" },
-            { category: "Оборудование" },
-          ],
-        };
-
+      function updateTypeList(selectedCategory) {
         const categoryTypes = productTypesMap[selectedCategory];
 
         if (typeTitle) {
           typeTitle.textContent = "Тип товара";
         }
 
-        if (filterTypeList && categoryTypes) {
-          filterTypeList.innerHTML = "";
+        if (filterAnimalList && categoryTypes) {
+          filterAnimalList.style.display = "none";
+
+          const oldFilterTypeList = document.querySelector(
+            ".filter__type__list"
+          );
+          if (oldFilterTypeList) {
+            oldFilterTypeList.remove();
+          }
+
+          const filterTypeList = document.createElement("div");
+          filterTypeList.className = "filter__type__list";
+          filterContainer.appendChild(filterTypeList);
 
           for (const type of categoryTypes) {
             if (type.subcategory && type.subcategory.length > 0) {
@@ -199,7 +213,7 @@ window.filterCategoryAnimal = function () {
         }
       }
 
-      updateTypeList();
+      updateTypeList(selectedCategory);
     });
   }
 };

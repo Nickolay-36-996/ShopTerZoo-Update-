@@ -4006,6 +4006,15 @@ body {
   cursor: pointer;
 }
 
+.filter__type__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-radius: 5px;
+  background-color: white;
+  list-style-type: none;
+}
+
 @media (max-width: 992px) {
   .products__catalog__title {
     font-size: 34px;

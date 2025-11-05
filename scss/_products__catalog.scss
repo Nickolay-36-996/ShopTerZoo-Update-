@@ -616,22 +616,31 @@
 }
 
 .food__category__contain {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
 }
 
 .food__subcategories__list {
-    padding-left: 20px;
+  padding-left: 20px;
 }
 
 .food__subcategory__item {
-    display: flex;
-    align-items: center;
-    padding: 6px 0;
-    gap: 4px;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.filter__type__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-radius: 5px;
+  background-color: white;
+  list-style-type: none;
 }
 
 @media (max-width: 992px) {
