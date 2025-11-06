@@ -229,11 +229,25 @@ window.filterCategoryAnimal = function () {
                         "products__catalog__filter__brand__indicator__active"
                       );
 
-                    if (isActive) {
+                    const allActiveSubcategories =
+                      filterTypeList.querySelectorAll(
+                        ".products__catalog__filter__brand__indicator__active"
+                      );
+
+                    let categoryFilters = "";
+
+                    for (const activeIndicator of allActiveSubcategories) {
+                      const subcategoryItem = activeIndicator.closest(
+                        ".food__subcategory__item"
+                      );
+                      const subcategoryText = subcategoryItem
+                        .querySelector(".products__catalog__filter__brand__txt")
+                        .textContent.trim();
+
                       const foundProduct = data.find((item) => {
                         return (
                           item.category &&
-                          item.category.name === subcategoryName
+                          item.category.name === subcategoryText
                         );
                       });
 
@@ -243,63 +257,36 @@ window.filterCategoryAnimal = function () {
                           : "";
 
                       if (typeId) {
-                        const typeApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&category__in=${typeId}&page=1`;
-
-                        fetch(typeApiUrl)
-                          .then((response) => {
-                            if (!response.ok)
-                              throw new Error(
-                                `HTTP status: ${response.status}`
-                              );
-                            return response.json();
-                          })
-                          .then((filteredData) => {
-                            if (typeof window.productItems === "function") {
-                              window.productItems(filteredData.results);
-                            }
-                            if (typeof window.updatePagination === "function") {
-                              window.updatePagination(
-                                filteredData,
-                                1,
-                                typeApiUrl.replace("&page=1", "")
-                              );
-                            }
-                          })
-                          .catch((error) => {
-                            console.error(
-                              "Ошибка загрузки отфильтрованных товаров:",
-                              error
-                            );
-                          });
+                        categoryFilters += `&category__in=${typeId}`;
                       }
-                    } else {
-                      const typeApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&page=1`;
-
-                      fetch(typeApiUrl)
-                        .then((response) => {
-                          if (!response.ok)
-                            throw new Error(`HTTP status: ${response.status}`);
-                          return response.json();
-                        })
-                        .then((filteredData) => {
-                          if (typeof window.productItems === "function") {
-                            window.productItems(filteredData.results);
-                          }
-                          if (typeof window.updatePagination === "function") {
-                            window.updatePagination(
-                              filteredData,
-                              1,
-                              typeApiUrl.replace("&page=1", "")
-                            );
-                          }
-                        })
-                        .catch((error) => {
-                          console.error(
-                            "Ошибка загрузки отфильтрованных товаров:",
-                            error
-                          );
-                        });
                     }
+
+                    const typeApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}${categoryFilters}&page=1`;
+
+                    fetch(typeApiUrl)
+                      .then((response) => {
+                        if (!response.ok)
+                          throw new Error(`HTTP status: ${response.status}`);
+                        return response.json();
+                      })
+                      .then((filteredData) => {
+                        if (typeof window.productItems === "function") {
+                          window.productItems(filteredData.results);
+                        }
+                        if (typeof window.updatePagination === "function") {
+                          window.updatePagination(
+                            filteredData,
+                            1,
+                            typeApiUrl.replace("&page=1", "")
+                          );
+                        }
+                      })
+                      .catch((error) => {
+                        console.error(
+                          "Ошибка загрузки отфильтрованных товаров:",
+                          error
+                        );
+                      });
                   }
                 });
               }
