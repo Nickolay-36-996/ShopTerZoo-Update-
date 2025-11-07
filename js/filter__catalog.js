@@ -176,6 +176,88 @@ window.filterCategoryAnimal = function () {
           filterTypeList.className = "filter__type__list";
           filterContainer.appendChild(filterTypeList);
 
+          filterTypeList.addEventListener("click", function (e) {
+            const subcategoryItem = e.target.closest(
+              ".food__subcategory__item"
+            );
+            if (subcategoryItem) {
+              e.stopPropagation();
+              e.preventDefault();
+
+              const currentSubcategoryIndicator = subcategoryItem.querySelector(
+                ".products__catalog__filter__brand__indicator"
+              );
+
+              if (currentSubcategoryIndicator) {
+                currentSubcategoryIndicator.classList.toggle(
+                  "products__catalog__filter__brand__indicator__active"
+                );
+
+                const subcategoriesContainer = subcategoryItem.closest(
+                  ".food__subcategories__list"
+                );
+
+                const allActiveSubcategories =
+                  subcategoriesContainer.querySelectorAll(
+                    ".products__catalog__filter__brand__indicator__active"
+                  );
+
+                let categoryFilters = "";
+
+                for (const activeIndicator of allActiveSubcategories) {
+                  const activeSubcategoryItem = activeIndicator.closest(
+                    ".food__subcategory__item"
+                  );
+                  const subcategoryText = activeSubcategoryItem
+                    .querySelector(".products__catalog__filter__brand__txt")
+                    .textContent.trim();
+
+                  const foundProduct = data.find((item) => {
+                    return (
+                      item.category && item.category.name === subcategoryText
+                    );
+                  });
+
+                  const typeId =
+                    foundProduct && foundProduct.category
+                      ? foundProduct.category.id
+                      : "";
+
+                  if (typeId) {
+                    categoryFilters += `&category__in=${typeId}`;
+                  }
+                }
+
+                const typeApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}${categoryFilters}&page=1`;
+
+                fetch(typeApiUrl)
+                  .then((response) => {
+                    if (!response.ok)
+                      throw new Error(`HTTP status: ${response.status}`);
+                    return response.json();
+                  })
+                  .then((filteredData) => {
+                    if (typeof window.productItems === "function") {
+                      window.productItems(filteredData.results);
+                    }
+                    if (typeof window.updatePagination === "function") {
+                      window.updatePagination(
+                        filteredData,
+                        1,
+                        typeApiUrl.replace("&page=1", "")
+                      );
+                    }
+                  })
+                  .catch((error) => {
+                    console.error(
+                      "Ошибка загрузки отфильтрованных товаров:",
+                      error
+                    );
+                  });
+              }
+            }
+          });
+
           for (const type of categoryTypes) {
             if (type.subcategory && type.subcategory.length > 0) {
               const isSubcategory = type.subcategory
@@ -200,96 +282,6 @@ window.filterCategoryAnimal = function () {
               `;
 
               filterTypeList.appendChild(listItem);
-
-              const subcategoryItems = filterTypeList.querySelectorAll(
-                ".food__subcategory__item"
-              );
-              for (const subcategoryItem of subcategoryItems) {
-                subcategoryItem.addEventListener("click", function (e) {
-                  e.stopPropagation();
-                  e.preventDefault();
-
-                  const currentSubcategoryIndicator = this.querySelector(
-                    ".products__catalog__filter__brand__indicator"
-                  );
-
-                  if (currentSubcategoryIndicator) {
-                    currentSubcategoryIndicator.classList.toggle(
-                      "products__catalog__filter__brand__indicator__active"
-                    );
-
-                    const subcategoryElement = this.querySelector(
-                      ".products__catalog__filter__brand__txt"
-                    );
-                    const subcategoryName =
-                      subcategoryElement.textContent.trim();
-
-                    const isActive =
-                      currentSubcategoryIndicator.classList.contains(
-                        "products__catalog__filter__brand__indicator__active"
-                      );
-
-                    const allActiveSubcategories =
-                      filterTypeList.querySelectorAll(
-                        ".products__catalog__filter__brand__indicator__active"
-                      );
-
-                    let categoryFilters = "";
-
-                    for (const activeIndicator of allActiveSubcategories) {
-                      const subcategoryItem = activeIndicator.closest(
-                        ".food__subcategory__item"
-                      );
-                      const subcategoryText = subcategoryItem
-                        .querySelector(".products__catalog__filter__brand__txt")
-                        .textContent.trim();
-
-                      const foundProduct = data.find((item) => {
-                        return (
-                          item.category &&
-                          item.category.name === subcategoryText
-                        );
-                      });
-
-                      const typeId =
-                        foundProduct && foundProduct.category
-                          ? foundProduct.category.id
-                          : "";
-
-                      if (typeId) {
-                        categoryFilters += `&category__in=${typeId}`;
-                      }
-                    }
-
-                    const typeApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}${categoryFilters}&page=1`;
-
-                    fetch(typeApiUrl)
-                      .then((response) => {
-                        if (!response.ok)
-                          throw new Error(`HTTP status: ${response.status}`);
-                        return response.json();
-                      })
-                      .then((filteredData) => {
-                        if (typeof window.productItems === "function") {
-                          window.productItems(filteredData.results);
-                        }
-                        if (typeof window.updatePagination === "function") {
-                          window.updatePagination(
-                            filteredData,
-                            1,
-                            typeApiUrl.replace("&page=1", "")
-                          );
-                        }
-                      })
-                      .catch((error) => {
-                        console.error(
-                          "Ошибка загрузки отфильтрованных товаров:",
-                          error
-                        );
-                      });
-                  }
-                });
-              }
             } else {
               const listItem = document.createElement("li");
               listItem.className =
