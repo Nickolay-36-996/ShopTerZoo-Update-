@@ -193,14 +193,9 @@ window.filterCategoryAnimal = function () {
                   "products__catalog__filter__brand__indicator__active"
                 );
 
-                const subcategoriesContainer = subcategoryItem.closest(
-                  ".food__subcategories__list"
+                const allActiveSubcategories = filterTypeList.querySelectorAll(
+                  ".products__catalog__filter__brand__indicator__active"
                 );
-
-                const allActiveSubcategories =
-                  subcategoriesContainer.querySelectorAll(
-                    ".products__catalog__filter__brand__indicator__active"
-                  );
 
                 let categoryFilters = "";
 
@@ -260,36 +255,188 @@ window.filterCategoryAnimal = function () {
 
           for (const type of categoryTypes) {
             if (type.subcategory && type.subcategory.length > 0) {
+              let totalCategoryCount = 0;
+              const subcategoryCounts = {};
+
+              for (const subcategoryName of type.subcategory) {
+                const subcategoryProducts = data.filter((product) => {
+                  return (
+                    product.category &&
+                    product.category.name === subcategoryName
+                  );
+                });
+                const subcategoryCount = subcategoryProducts.length;
+                subcategoryCounts[subcategoryName] = subcategoryCount;
+                totalCategoryCount += subcategoryCount;
+              }
+
+              const hasPromotion = data.some((item) => {
+                return (
+                  item.sale &&
+                  item.sale.percent > 0 &&
+                  type.subcategory.includes(item.category?.name)
+                );
+              });
+
               const isSubcategory = type.subcategory
-                .map((item) => {
+                .map((subcategoryName) => {
+                  const subcategoryCount =
+                    subcategoryCounts[subcategoryName] || 0;
+                  const hasSubcategoryPromotion = data.some((item) => {
+                    return (
+                      item.sale &&
+                      item.sale.percent > 0 &&
+                      item.category?.name === subcategoryName
+                    );
+                  });
+
                   return `
-                <div class="food__subcategory__item">
-                <div class="products__catalog__filter__brand__indicator"></div>
-                <p class="products__catalog__filter__brand__txt">${item}</p>
-                </div>
-                `;
+            <div class="food__subcategory__item">
+              <div class="products__catalog__filter__brand__indicator"></div>
+              <p class="products__catalog__filter__brand__txt">${subcategoryName}</p>
+              <span class="products__catalog__filter__type__count">(${subcategoryCount})</span>
+            </div>
+            `;
                 })
                 .join("");
 
               const listItem = document.createElement("li");
               listItem.className = "food__category__item";
               listItem.innerHTML = `
-              <div class="food__category__contain">
-              <div class="products__catalog__filter__type__indicator"></div>
-              <p class="products__catalog__filter__type__txt">${type.category}</p>
-              </div>
-              <div class="food__subcategories__list">${isSubcategory}</div>
-              `;
+        <div class="food__category__contain">
+          <div class="products__catalog__filter__type__indicator"></div>
+          <p class="products__catalog__filter__type__txt">${type.category}</p>
+          <span class="products__catalog__filter__type__count">(${totalCategoryCount})</span>
+          ${
+            hasPromotion
+              ? `<span class="products__catalog__filter__type__sale">Акция</span>`
+              : ""
+          }
+        </div>
+        <div class="food__subcategories__list">${isSubcategory}</div>
+        `;
 
               filterTypeList.appendChild(listItem);
+
+              const categoryContain = listItem.querySelector(
+                ".food__category__contain"
+              );
+              categoryContain.addEventListener("click", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const parentIndicator = this.querySelector(
+                  ".products__catalog__filter__type__indicator"
+                );
+                parentIndicator.classList.toggle(
+                  "products__catalog__filter__type__indicator__active"
+                );
+
+                const subcategoryIndicators = listItem.querySelectorAll(
+                  ".products__catalog__filter__brand__indicator"
+                );
+
+                if (
+                  parentIndicator.classList.contains(
+                    "products__catalog__filter__type__indicator__active"
+                  )
+                ) {
+                  for (const indicator of subcategoryIndicators) {
+                    indicator.classList.add(
+                      "products__catalog__filter__brand__indicator__active"
+                    );
+                  }
+                } else {
+                  for (const indicator of subcategoryIndicators) {
+                    indicator.classList.remove(
+                      "products__catalog__filter__brand__indicator__active"
+                    );
+                  }
+                }
+
+                const allActiveSubcategories = filterTypeList.querySelectorAll(
+                  ".products__catalog__filter__brand__indicator__active"
+                );
+
+                let categoryFilters = "";
+
+                for (const activeIndicator of allActiveSubcategories) {
+                  const activeSubcategoryItem = activeIndicator.closest(
+                    ".food__subcategory__item"
+                  );
+                  const subcategoryText = activeSubcategoryItem
+                    .querySelector(".products__catalog__filter__brand__txt")
+                    .textContent.trim();
+
+                  const foundProduct = data.find((item) => {
+                    return (
+                      item.category && item.category.name === subcategoryText
+                    );
+                  });
+
+                  const typeId =
+                    foundProduct && foundProduct.category
+                      ? foundProduct.category.id
+                      : "";
+
+                  if (typeId) {
+                    categoryFilters += `&category__in=${typeId}`;
+                  }
+                }
+
+                const typeApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}${categoryFilters}&page=1`;
+
+                fetch(typeApiUrl)
+                  .then((response) => {
+                    if (!response.ok)
+                      throw new Error(`HTTP status: ${response.status}`);
+                    return response.json();
+                  })
+                  .then((filteredData) => {
+                    if (typeof window.productItems === "function") {
+                      window.productItems(filteredData.results);
+                    }
+                    if (typeof window.updatePagination === "function") {
+                      window.updatePagination(
+                        filteredData,
+                        1,
+                        typeApiUrl.replace("&page=1", "")
+                      );
+                    }
+                  })
+                  .catch((error) => {
+                    console.error(
+                      "Ошибка загрузки отфильтрованных товаров:",
+                      error
+                    );
+                  });
+              });
             } else {
+              const countProducts = data.filter((product) => {
+                return (
+                  product.category && product.category.name === type.category
+                );
+              });
+              const countProductsElement = countProducts.length;
+              const hasPromotion = countProducts.some((item) => {
+                return item.sale && item.sale.percent > 0;
+              });
+
               const listItem = document.createElement("li");
               listItem.className =
                 "products__catalog__filter__type__list__item";
               listItem.innerHTML = `
-            <div class="products__catalog__filter__type__indicator"></div>
-            <p class="products__catalog__filter__type__txt">${type.category}</p>
-            `;
+        <div class="products__catalog__filter__type__indicator"></div>
+        <p class="products__catalog__filter__type__txt">${type.category}</p>
+        <span class="products__catalog__filter__type__count">(${countProductsElement})</span>
+        ${
+          hasPromotion
+            ? `
+          <span class="products__catalog__filter__type__sale">Акция</span>
+          `
+            : ""
+        }
+        `;
 
               filterTypeList.appendChild(listItem);
 
