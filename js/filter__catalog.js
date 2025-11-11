@@ -76,6 +76,32 @@ window.filterCategoryAnimal = function () {
     ],
   };
 
+  async function getAllFilteredProducts(animalId) {
+    let allProducts = [];
+    let nextUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&page=1`;
+
+    try {
+      while (nextUrl) {
+        const response = await fetch(nextUrl);
+        if (!response.ok) throw new Error(`HTTP status: ${response.status}`);
+        const data = await response.json();
+
+        if (data.results && data.results.length > 0) {
+          allProducts = [...allProducts, ...data.results];
+        }
+        nextUrl = data.next;
+      }
+
+      console.log(
+        `Загружены все товары категории животного: ${allProducts.length} шт.`
+      );
+      return allProducts;
+    } catch (error) {
+      console.error("Ошибка загрузки товаров категории:", error);
+      return [];
+    }
+  }
+
   for (const animalItem of filterCategoryAnimalItems) {
     animalItem.addEventListener("click", function (e) {
       e.preventDefault();
@@ -134,28 +160,43 @@ window.filterCategoryAnimal = function () {
       const animalId = animalFilterMap[selectedCategory];
       if (!animalId) return;
 
-      const apiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&page=1`;
+      getAllFilteredProducts(animalId).then((allFilteredProducts) => {
+        const apiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&page=1`;
 
-      fetch(apiUrl)
-        .then((response) => {
-          if (!response.ok) throw new Error(`HTTP status: ${response.status}`);
-          return response.json();
-        })
-        .then((data) => {
-          updateTypeList(selectedCategory, data.results, apiUrl, animalId);
+        fetch(apiUrl)
+          .then((response) => {
+            if (!response.ok)
+              throw new Error(`HTTP status: ${response.status}`);
+            return response.json();
+          })
+          .then((data) => {
+            updateTypeList(
+              selectedCategory,
+              data.results,
+              apiUrl,
+              animalId,
+              allFilteredProducts
+            );
 
-          if (typeof window.productItems === "function") {
-            window.productItems(data.results);
-          }
-          if (typeof window.updatePagination === "function") {
-            window.updatePagination(data, 1, apiUrl.replace("&page=1", ""));
-          }
-        })
-        .catch((error) => {
-          console.error("Ошибка загрузки отфильтрованных товаров:", error);
-        });
+            if (typeof window.productItems === "function") {
+              window.productItems(data.results);
+            }
+            if (typeof window.updatePagination === "function") {
+              window.updatePagination(data, 1, apiUrl.replace("&page=1", ""));
+            }
+          })
+          .catch((error) => {
+            console.error("Ошибка загрузки отфильтрованных товаров:", error);
+          });
+      });
 
-      function updateTypeList(selectedCategory, data, apiUrl) {
+      function updateTypeList(
+        selectedCategory,
+        data,
+        apiUrl,
+        animalId,
+        allFilteredProducts
+      ) {
         const categoryTypes = productTypesMap[selectedCategory];
 
         if (typeTitle) {
@@ -207,7 +248,7 @@ window.filterCategoryAnimal = function () {
                     .querySelector(".products__catalog__filter__brand__txt")
                     .textContent.trim();
 
-                  const foundProduct = data.find((item) => {
+                  const foundProduct = allFilteredProducts.find((item) => {
                     return (
                       item.category && item.category.name === subcategoryText
                     );
@@ -259,18 +300,20 @@ window.filterCategoryAnimal = function () {
               const subcategoryCounts = {};
 
               for (const subcategoryName of type.subcategory) {
-                const subcategoryProducts = data.filter((product) => {
-                  return (
-                    product.category &&
-                    product.category.name === subcategoryName
-                  );
-                });
+                const subcategoryProducts = allFilteredProducts.filter(
+                  (product) => {
+                    return (
+                      product.category &&
+                      product.category.name === subcategoryName
+                    );
+                  }
+                );
                 const subcategoryCount = subcategoryProducts.length;
                 subcategoryCounts[subcategoryName] = subcategoryCount;
                 totalCategoryCount += subcategoryCount;
               }
 
-              const hasPromotion = data.some((item) => {
+              const hasPromotion = allFilteredProducts.some((item) => {
                 return (
                   item.sale &&
                   item.sale.percent > 0 &&
@@ -282,13 +325,15 @@ window.filterCategoryAnimal = function () {
                 .map((subcategoryName) => {
                   const subcategoryCount =
                     subcategoryCounts[subcategoryName] || 0;
-                  const hasSubcategoryPromotion = data.some((item) => {
-                    return (
-                      item.sale &&
-                      item.sale.percent > 0 &&
-                      item.category?.name === subcategoryName
-                    );
-                  });
+                  const hasSubcategoryPromotion = allFilteredProducts.some(
+                    (item) => {
+                      return (
+                        item.sale &&
+                        item.sale.percent > 0 &&
+                        item.category?.name === subcategoryName
+                      );
+                    }
+                  );
 
                   return `
             <div class="food__subcategory__item">
@@ -368,7 +413,7 @@ window.filterCategoryAnimal = function () {
                     .querySelector(".products__catalog__filter__brand__txt")
                     .textContent.trim();
 
-                  const foundProduct = data.find((item) => {
+                  const foundProduct = allFilteredProducts.find((item) => {
                     return (
                       item.category && item.category.name === subcategoryText
                     );
@@ -412,7 +457,7 @@ window.filterCategoryAnimal = function () {
                   });
               });
             } else {
-              const countProducts = data.filter((product) => {
+              const countProducts = allFilteredProducts.filter((product) => {
                 return (
                   product.category && product.category.name === type.category
                 );
@@ -466,7 +511,7 @@ window.filterCategoryAnimal = function () {
                 );
                 const typeName = typeElement.textContent.trim();
 
-                const foundProduct = data.find((item) => {
+                const foundProduct = allFilteredProducts.find((item) => {
                   return item.category && item.category.name === typeName;
                 });
 
