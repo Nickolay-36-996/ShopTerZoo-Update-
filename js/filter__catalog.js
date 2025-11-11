@@ -234,6 +234,28 @@ window.filterCategoryAnimal = function () {
                   "products__catalog__filter__brand__indicator__active"
                 );
 
+                const parentCategory = subcategoryItem.closest(
+                  ".food__category__item"
+                );
+                const parentIndicator = parentCategory.querySelector(
+                  ".products__catalog__filter__type__indicator"
+                );
+
+                const activeSubcategoriesInParent =
+                  parentCategory.querySelectorAll(
+                    ".products__catalog__filter__brand__indicator__active"
+                  );
+
+                if (activeSubcategoriesInParent.length > 0) {
+                  parentIndicator.classList.add(
+                    "products__catalog__filter__type__indicator__active"
+                  );
+                } else {
+                  parentIndicator.classList.remove(
+                    "products__catalog__filter__type__indicator__active"
+                  );
+                }
+
                 const allActiveSubcategories = filterTypeList.querySelectorAll(
                   ".products__catalog__filter__brand__indicator__active"
                 );
