@@ -511,6 +511,16 @@ window.filterCategoryAnimal = function () {
                 e.preventDefault();
                 e.stopPropagation();
 
+                const allActiveSubcategoryIndicators =
+                  document.querySelectorAll(
+                    ".products__catalog__filter__brand__indicator__active"
+                  );
+                for (const indicator of allActiveSubcategoryIndicators) {
+                  indicator.classList.remove(
+                    "products__catalog__filter__brand__indicator__active"
+                  );
+                }
+
                 const typeIndicators = filterTypeList.querySelectorAll(
                   ".products__catalog__filter__type__indicator"
                 );
