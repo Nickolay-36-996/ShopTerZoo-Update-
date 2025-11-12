@@ -1,5 +1,5 @@
 "use strict";
-window.getAllFilteredProducts = async function(animalId) {
+window.getAllFilteredProducts = async function (animalId) {
   let allProducts = [];
   let nextUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&page=1`;
 
@@ -23,7 +23,7 @@ window.getAllFilteredProducts = async function(animalId) {
     console.error("Ошибка загрузки товаров категории:", error);
     return [];
   }
-}
+};
 
 window.filterCategoryAnimal = function () {
   const filterCategoryAnimalItems = document.querySelectorAll(
@@ -225,9 +225,13 @@ window.filterCategoryAnimal = function () {
               e.stopPropagation();
               e.preventDefault();
 
-              const allCategoryIndicators = document.querySelectorAll(".products__catalog__filter__type__indicator");
+              const allCategoryIndicators = document.querySelectorAll(
+                ".products__catalog__filter__type__indicator"
+              );
               for (const categoryIndicator of allCategoryIndicators) {
-                categoryIndicator.classList.remove("products__catalog__filter__type__indicator__active");
+                categoryIndicator.classList.remove(
+                  "products__catalog__filter__type__indicator__active"
+                );
               }
 
               const currentSubcategoryIndicator = subcategoryItem.querySelector(
@@ -396,6 +400,15 @@ window.filterCategoryAnimal = function () {
               categoryContain.addEventListener("click", function (e) {
                 e.preventDefault();
                 e.stopPropagation();
+
+                const otherParentIndicator = document.querySelectorAll(
+                  ".products__catalog__filter__type__indicator"
+                );
+                for (const indicator of otherParentIndicator) {
+                  indicator.classList.remove(
+                    "products__catalog__filter__type__indicator__active"
+                  );
+                }
 
                 const parentIndicator = this.querySelector(
                   ".products__catalog__filter__type__indicator"
@@ -598,4 +611,6 @@ window.filterBrandProducts = function () {
   const filterBrandContainer = document.querySelector(
     ".products__catalog__filter__brand__list"
   );
+
+  getAllFilteredProducts().then((allBrands) => {});
 };
