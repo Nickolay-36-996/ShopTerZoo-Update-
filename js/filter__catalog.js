@@ -676,13 +676,7 @@ window.filterBrandProducts = function () {
           }
         }
 
-        const currentAnimalId = window.currentAnimalId || "";
-        const animalFilter = currentAnimalId
-          ? `&animal__in=${currentAnimalId}`
-          : "";
-        const categoryFilters = "";
-
-        const filterUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${animalFilter}${categoryFilters}${brandFilters}&page=1`;
+        const filterUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${brandFilters}&page=1`;
 
         fetch(filterUrl)
           .then((response) => {
