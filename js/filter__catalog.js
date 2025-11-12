@@ -1,4 +1,30 @@
 "use strict";
+window.getAllFilteredProducts = async function(animalId) {
+  let allProducts = [];
+  let nextUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&page=1`;
+
+  try {
+    while (nextUrl) {
+      const response = await fetch(nextUrl);
+      if (!response.ok) throw new Error(`HTTP status: ${response.status}`);
+      const data = await response.json();
+
+      if (data.results && data.results.length > 0) {
+        allProducts = [...allProducts, ...data.results];
+      }
+      nextUrl = data.next;
+    }
+
+    console.log(
+      `Загружены все товары категории животного: ${allProducts.length} шт.`
+    );
+    return allProducts;
+  } catch (error) {
+    console.error("Ошибка загрузки товаров категории:", error);
+    return [];
+  }
+}
+
 window.filterCategoryAnimal = function () {
   const filterCategoryAnimalItems = document.querySelectorAll(
     ".products__catalog__filter__type__list__item"
@@ -75,32 +101,6 @@ window.filterCategoryAnimal = function () {
       { category: "Оборудование" },
     ],
   };
-
-  async function getAllFilteredProducts(animalId) {
-    let allProducts = [];
-    let nextUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&page=1`;
-
-    try {
-      while (nextUrl) {
-        const response = await fetch(nextUrl);
-        if (!response.ok) throw new Error(`HTTP status: ${response.status}`);
-        const data = await response.json();
-
-        if (data.results && data.results.length > 0) {
-          allProducts = [...allProducts, ...data.results];
-        }
-        nextUrl = data.next;
-      }
-
-      console.log(
-        `Загружены все товары категории животного: ${allProducts.length} шт.`
-      );
-      return allProducts;
-    } catch (error) {
-      console.error("Ошибка загрузки товаров категории:", error);
-      return [];
-    }
-  }
 
   for (const animalItem of filterCategoryAnimalItems) {
     animalItem.addEventListener("click", function (e) {
@@ -224,6 +224,11 @@ window.filterCategoryAnimal = function () {
             if (subcategoryItem) {
               e.stopPropagation();
               e.preventDefault();
+
+              const allCategoryIndicators = document.querySelectorAll(".products__catalog__filter__type__indicator");
+              for (const categoryIndicator of allCategoryIndicators) {
+                categoryIndicator.classList.remove("products__catalog__filter__type__indicator__active");
+              }
 
               const currentSubcategoryIndicator = subcategoryItem.querySelector(
                 ".products__catalog__filter__brand__indicator"
@@ -587,4 +592,10 @@ window.filterCategoryAnimal = function () {
       }
     });
   }
+};
+
+window.filterBrandProducts = function () {
+  const filterBrandContainer = document.querySelector(
+    ".products__catalog__filter__brand__list"
+  );
 };
