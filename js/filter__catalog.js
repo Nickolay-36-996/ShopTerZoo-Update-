@@ -611,6 +611,7 @@ window.filterBrandProducts = function () {
   const filterBrandContainer = document.querySelector(
     ".products__catalog__filter__brand__list"
   );
+  let brandMap = [];
 
   fetch("https://oliver1ck.pythonanywhere.com/api/get_brands_list/")
     .then((response) => {
@@ -621,8 +622,9 @@ window.filterBrandProducts = function () {
     })
     .then((data) => {
       console.log("фильтры для брендов загружены:", data);
+      brandMap = data.results;
 
-      for (const brandEl of data.results) {
+      for (const brandEl of brandMap) {
         const brandElement = document.createElement("div");
         brandElement.className = "products__catalog__filter__brand__item";
         brandElement.innerHTML = `
@@ -631,8 +633,79 @@ window.filterBrandProducts = function () {
       `;
         filterBrandContainer.appendChild(brandElement);
       }
+      applyBrandFilters(brandMap);
     })
     .catch((error) => {
       console.error("Ошибка fetch:", error);
     });
+
+  function applyBrandFilters(brandMap) {
+    const filterBrandElements = document.querySelectorAll(
+      ".products__catalog__filter__brand__item"
+    );
+
+    for (const filterBrandElement of filterBrandElements) {
+      filterBrandElement.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const indicator = this.querySelector(
+          ".products__catalog__filter__brand__indicator"
+        );
+        indicator.classList.toggle(
+          "products__catalog__filter__brand__indicator__active"
+        );
+
+        let brandFilters = "";
+        const allActiveBrands = document.querySelectorAll(
+          ".products__catalog__filter__brand__indicator__active"
+        );
+
+        for (const activeIndicator of allActiveBrands) {
+          const brandItem = activeIndicator.closest(
+            ".products__catalog__filter__brand__item"
+          );
+          const brandText = brandItem.querySelector(
+            ".products__catalog__filter__brand__txt"
+          );
+          const brandName = brandText.textContent.trim();
+
+          const brandData = brandMap.find((item) => item.name === brandName);
+          if (brandData && brandData.id) {
+            brandFilters += `&brand_id__in=${brandData.id}`;
+          }
+        }
+
+        const currentAnimalId = window.currentAnimalId || "";
+        const animalFilter = currentAnimalId
+          ? `&animal__in=${currentAnimalId}`
+          : "";
+        const categoryFilters = "";
+
+        const filterUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${animalFilter}${categoryFilters}${brandFilters}&page=1`;
+
+        fetch(filterUrl)
+          .then((response) => {
+            if (!response.ok)
+              throw new Error(`HTTP status: ${response.status}`);
+            return response.json();
+          })
+          .then((filteredData) => {
+            if (typeof window.productItems === "function") {
+              window.productItems(filteredData.results);
+            }
+            if (typeof window.updatePagination === "function") {
+              window.updatePagination(
+                filteredData,
+                1,
+                filterUrl.replace("&page=1", "")
+              );
+            }
+          })
+          .catch((error) => {
+            console.error("Ошибка загрузки отфильтрованных товаров:", error);
+          });
+      });
+    }
+  }
 };
