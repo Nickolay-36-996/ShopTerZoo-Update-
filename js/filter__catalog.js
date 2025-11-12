@@ -612,5 +612,27 @@ window.filterBrandProducts = function () {
     ".products__catalog__filter__brand__list"
   );
 
-  getAllFilteredProducts().then((allBrands) => {});
+  fetch("https://oliver1ck.pythonanywhere.com/api/get_brands_list/")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("фильтры для брендов загружены:", data);
+
+      for (const brandEl of data.results) {
+        const brandElement = document.createElement("div");
+        brandElement.className = "products__catalog__filter__brand__item";
+        brandElement.innerHTML = `
+      <div class="products__catalog__filter__brand__indicator"></div>
+      <p class="products__catalog__filter__brand__txt">${brandEl.name}</p>
+      `;
+        filterBrandContainer.appendChild(brandElement);
+      }
+    })
+    .catch((error) => {
+      console.error("Ошибка fetch:", error);
+    });
 };

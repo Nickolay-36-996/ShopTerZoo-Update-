@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
       productItems(allProducts);
       window.filterCategoryAnimal(allProducts);
       autoApplyFilter();
+      window.filterBrandProducts();
     })
     .catch((error) => {
       console.error("Ошибка fetch:", error);
