@@ -3947,6 +3947,22 @@ body {
   border-color: #008060;
 }
 
+.products__catalog__filter__subcategory__indicator {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #8c9196;
+  border-radius: 4px;
+  position: relative;
+}
+
+.products__catalog__filter__subcategory__indicator__active {
+  background-image: url(../img/check.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: #008060;
+  border-color: #008060;
+}
+
 .products__catalog__filter__brand__txt {
   font-family: SF Pro Text;
   font-weight: 400;

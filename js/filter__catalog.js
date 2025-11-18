@@ -244,12 +244,12 @@ window.filterCategoryAnimal = function () {
               }
 
               const currentSubcategoryIndicator = subcategoryItem.querySelector(
-                ".products__catalog__filter__brand__indicator"
+                ".products__catalog__filter__subcategory__indicator"
               );
 
               if (currentSubcategoryIndicator) {
                 currentSubcategoryIndicator.classList.toggle(
-                  "products__catalog__filter__brand__indicator__active"
+                  "products__catalog__filter__subcategory__indicator__active"
                 );
 
                 const parentCategory = subcategoryItem.closest(
@@ -261,7 +261,7 @@ window.filterCategoryAnimal = function () {
 
                 const activeSubcategoriesInParent =
                   parentCategory.querySelectorAll(
-                    ".products__catalog__filter__brand__indicator__active"
+                    ".products__catalog__filter__subcategory__indicator__active"
                   );
 
                 if (activeSubcategoriesInParent.length > 0) {
@@ -275,7 +275,7 @@ window.filterCategoryAnimal = function () {
                 }
 
                 const allActiveSubcategories = filterTypeList.querySelectorAll(
-                  ".products__catalog__filter__brand__indicator__active"
+                  ".products__catalog__filter__subcategory__indicator__active"
                 );
 
                 let categoryFilters = "";
@@ -385,7 +385,7 @@ window.filterCategoryAnimal = function () {
 
                   return `
             <div class="food__subcategory__item">
-              <div class="products__catalog__filter__brand__indicator"></div>
+              <div class="products__catalog__filter__subcategory__indicator"></div>
               <p class="products__catalog__filter__brand__txt">${subcategoryName}</p>
               <span class="products__catalog__filter__type__count">(${subcategoryCount})</span>
             </div>
@@ -418,6 +418,62 @@ window.filterCategoryAnimal = function () {
                 e.preventDefault();
                 e.stopPropagation();
 
+                const parentIndicator = this.querySelector(
+                  ".products__catalog__filter__type__indicator"
+                );
+                const isAlreadyActive = parentIndicator.classList.contains(
+                  "products__catalog__filter__type__indicator__active"
+                );
+
+                if (isAlreadyActive) {
+                  const otherParentIndicator = document.querySelectorAll(
+                    ".products__catalog__filter__type__indicator"
+                  );
+                  for (const indicator of otherParentIndicator) {
+                    indicator.classList.remove(
+                      "products__catalog__filter__type__indicator__active"
+                    );
+                  }
+
+                  const subcategoryIndicators = listItem.querySelectorAll(
+                    ".products__catalog__filter__subcategory__indicator"
+                  );
+                  for (const indicator of subcategoryIndicators) {
+                    indicator.classList.remove(
+                      "products__catalog__filter__subcategory__indicator__active"
+                    );
+                  }
+
+                  const resetApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&page=1`;
+
+                  fetch(resetApiUrl)
+                    .then((response) => {
+                      if (!response.ok)
+                        throw new Error(`HTTP status: ${response.status}`);
+                      return response.json();
+                    })
+                    .then((filteredData) => {
+                      if (typeof window.productItems === "function") {
+                        window.productItems(filteredData.results);
+                      }
+                      if (typeof window.updatePagination === "function") {
+                        window.updatePagination(
+                          filteredData,
+                          1,
+                          resetApiUrl.replace("&page=1", "")
+                        );
+                      }
+                    })
+                    .catch((error) => {
+                      console.error(
+                        "Ошибка загрузки отфильтрованных товаров:",
+                        error
+                      );
+                    });
+
+                  return;
+                }
+
                 const otherParentIndicator = document.querySelectorAll(
                   ".products__catalog__filter__type__indicator"
                 );
@@ -427,15 +483,12 @@ window.filterCategoryAnimal = function () {
                   );
                 }
 
-                const parentIndicator = this.querySelector(
-                  ".products__catalog__filter__type__indicator"
-                );
                 parentIndicator.classList.toggle(
                   "products__catalog__filter__type__indicator__active"
                 );
 
                 const subcategoryIndicators = listItem.querySelectorAll(
-                  ".products__catalog__filter__brand__indicator"
+                  ".products__catalog__filter__subcategory__indicator"
                 );
 
                 if (
@@ -445,19 +498,19 @@ window.filterCategoryAnimal = function () {
                 ) {
                   for (const indicator of subcategoryIndicators) {
                     indicator.classList.add(
-                      "products__catalog__filter__brand__indicator__active"
+                      "products__catalog__filter__subcategory__indicator__active"
                     );
                   }
                 } else {
                   for (const indicator of subcategoryIndicators) {
                     indicator.classList.remove(
-                      "products__catalog__filter__brand__indicator__active"
+                      "products__catalog__filter__subcategory__indicator__active"
                     );
                   }
                 }
 
                 const allActiveSubcategories = filterTypeList.querySelectorAll(
-                  ".products__catalog__filter__brand__indicator__active"
+                  ".products__catalog__filter__subcategory__indicator__active"
                 );
 
                 let categoryFilters = "";
@@ -554,13 +607,70 @@ window.filterCategoryAnimal = function () {
                 e.preventDefault();
                 e.stopPropagation();
 
+                const currentIndicator = this.querySelector(
+                  ".products__catalog__filter__type__indicator"
+                );
+                const isAlreadyActive = currentIndicator.classList.contains(
+                  "products__catalog__filter__type__indicator__active"
+                );
+
+                if (isAlreadyActive) {
+                  const typeIndicators = filterTypeList.querySelectorAll(
+                    ".products__catalog__filter__type__indicator"
+                  );
+                  for (const indicator of typeIndicators) {
+                    indicator.classList.remove(
+                      "products__catalog__filter__type__indicator__active"
+                    );
+                  }
+
+                  const allActiveSubcategoryIndicators =
+                    document.querySelectorAll(
+                      ".products__catalog__filter__subcategory__indicator__active"
+                    );
+                  for (const indicator of allActiveSubcategoryIndicators) {
+                    indicator.classList.remove(
+                      "products__catalog__filter__subcategory__indicator__active"
+                    );
+                  }
+
+                  const resetApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&page=1`;
+
+                  fetch(resetApiUrl)
+                    .then((response) => {
+                      if (!response.ok)
+                        throw new Error(`HTTP status: ${response.status}`);
+                      return response.json();
+                    })
+                    .then((filteredData) => {
+                      if (typeof window.productItems === "function") {
+                        window.productItems(filteredData.results);
+                      }
+                      if (typeof window.updatePagination === "function") {
+                        window.updatePagination(
+                          filteredData,
+                          1,
+                          resetApiUrl.replace("&page=1", "")
+                        );
+                      }
+                    })
+                    .catch((error) => {
+                      console.error(
+                        "Ошибка загрузки отфильтрованных товаров:",
+                        error
+                      );
+                    });
+
+                  return;
+                }
+
                 const allActiveSubcategoryIndicators =
                   document.querySelectorAll(
-                    ".products__catalog__filter__brand__indicator__active"
+                    ".products__catalog__filter__subcategory__indicator__active"
                   );
                 for (const indicator of allActiveSubcategoryIndicators) {
                   indicator.classList.remove(
-                    "products__catalog__filter__brand__indicator__active"
+                    "products__catalog__filter__subcategory__indicator__active"
                   );
                 }
 
@@ -572,14 +682,10 @@ window.filterCategoryAnimal = function () {
                     "products__catalog__filter__type__indicator__active"
                   );
                 }
-                const currentIndicator = this.querySelector(
-                  ".products__catalog__filter__type__indicator"
+
+                currentIndicator.classList.add(
+                  "products__catalog__filter__type__indicator__active"
                 );
-                if (currentIndicator) {
-                  currentIndicator.classList.add(
-                    "products__catalog__filter__type__indicator__active"
-                  );
-                }
 
                 const typeElement = this.querySelector(
                   ".products__catalog__filter__type__txt"
