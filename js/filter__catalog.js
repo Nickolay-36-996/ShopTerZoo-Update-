@@ -646,28 +646,16 @@ window.filterBrandProducts = function (animalId = null) {
   );
   let brandMap = [];
 
-  if (animalId) {
-    getAllFilteredProducts(animalId).then((allProducts) => {
-      console.log("Все товары категории загружены:", allProducts);
-
-      const uniqueBrands = [];
-      const seenBrandIds = [];
-
-      if (allProducts && allProducts.length > 0) {
-        for (const product of allProducts) {
-          if (
-            product.brand &&
-            product.brand.id &&
-            !seenBrandIds.includes(product.brand.id)
-          ) {
-            seenBrandIds.push(product.brand.id);
-            uniqueBrands.push(product.brand);
-          }
-        }
+  fetch("https://oliver1ck.pythonanywhere.com/api/get_brands_list/")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP status: ${response.status}`);
       }
-
-      console.log("Все уникальные бренды для категории:", uniqueBrands);
-      brandMap = uniqueBrands;
+      return response.json();
+    })
+    .then((data) => {
+      console.log("фильтры для брендов загружены:", data);
+      brandMap = data.results;
 
       filterBrandContainer.innerHTML = "";
 
@@ -675,45 +663,18 @@ window.filterBrandProducts = function (animalId = null) {
         const brandElement = document.createElement("div");
         brandElement.className = "products__catalog__filter__brand__item";
         brandElement.innerHTML = `
-            <div class="products__catalog__filter__brand__indicator"></div>
-            <p class="products__catalog__filter__brand__txt">${brandEl.name}</p>
-          `;
-        filterBrandContainer.appendChild(brandElement);
-      }
-
-      applyBrandFilters(brandMap, animalId);
-    });
-  } else {
-    fetch("https://oliver1ck.pythonanywhere.com/api/get_brands_list/")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("фильтры для брендов загружены:", data);
-        brandMap = data.results;
-
-        filterBrandContainer.innerHTML = "";
-
-        for (const brandEl of brandMap) {
-          const brandElement = document.createElement("div");
-          brandElement.className = "products__catalog__filter__brand__item";
-          brandElement.innerHTML = `
       <div class="products__catalog__filter__brand__indicator"></div>
       <p class="products__catalog__filter__brand__txt">${brandEl.name}</p>
       `;
-          filterBrandContainer.appendChild(brandElement);
-        }
-        applyBrandFilters(brandMap, animalId);
-      })
-      .catch((error) => {
-        console.error("Ошибка fetch:", error);
-      });
-  }
+        filterBrandContainer.appendChild(brandElement);
+      }
+      applyBrandFilters(brandMap, animalId, []);
+    })
+    .catch((error) => {
+      console.error("Ошибка fetch:", error);
+    });
 
-  function applyBrandFilters(brandMap, animalId) {
+  function applyBrandFilters(brandMap, animalId, allFilteredProducts) {
     const filterBrandElements = document.querySelectorAll(
       ".products__catalog__filter__brand__item"
     );
@@ -771,6 +732,30 @@ window.filterBrandProducts = function (animalId = null) {
           }
         }
 
+        let categoryFilters = "";
+
+        const activeCategoryIndicators = document.querySelectorAll(
+          ".products__catalog__filter__type__indicator__active"
+        );
+
+        for (const categoryIndicator of activeCategoryIndicators) {
+          const categoryItem = categoryIndicator.closest(
+            ".products__catalog__filter__type__list__item, .food__category__item"
+          );
+          if (categoryItem) {
+            const categoryText = categoryItem
+              .querySelector(".products__catalog__filter__type__txt")
+              .textContent.trim();
+
+            const foundCategory = allFilteredProducts.find(
+              (item) => item.category && item.category.name === categoryText
+            );
+            if (foundCategory && foundCategory.category) {
+              categoryFilters += `&category__in=${foundCategory.category.id}`;
+            }
+          }
+        }
+
         let brandFilters = "";
         if (window.selectedBrands.length > 0) {
           for (const brandId of window.selectedBrands) {
@@ -780,7 +765,7 @@ window.filterBrandProducts = function (animalId = null) {
 
         let animalFilter = animalId ? `&animal__in=${animalId}` : "";
 
-        const filterUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${animalFilter}${brandFilters}&page=1`;
+        const filterUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${animalFilter}${categoryFilters}${brandFilters}&page=1`;
 
         fetch(filterUrl)
           .then((response) => {
