@@ -812,6 +812,7 @@ window.filterBrandProducts = function (animalId = null) {
       `;
           filterBrandContainer.appendChild(brandElement);
         }
+        searchBrandFilter();
         applyBrandFilters(brandMap, animalId, []);
       })
       .catch((error) => {
@@ -935,5 +936,31 @@ window.filterBrandProducts = function (animalId = null) {
           });
       });
     }
+  }
+
+  function searchBrandFilter() {
+    const searchBrandInput = document.querySelector(
+      ".products__catalog__filter__brand__src__input"
+    );
+    const filterBrandItems = document.querySelectorAll(
+      ".products__catalog__filter__brand__item"
+    );
+
+    searchBrandInput.addEventListener("input", function (e) {
+      const searchText = e.target.value.toLowerCase().trim();
+
+      for (const brandItem of filterBrandItems) {
+        const brandText = brandItem.querySelector(
+          ".products__catalog__filter__brand__txt"
+        );
+        const brandName = brandText.textContent.toLowerCase();
+
+        if (brandName.includes(searchText)) {
+          brandItem.style.display = "flex";
+        } else {
+          brandItem.style.display = "none";
+        }
+      }
+    });
   }
 };
