@@ -978,7 +978,7 @@ window.filterBrandProducts = function (animalId = null) {
         stub.innerHTML = `
         <img class="stub__img" src="./img/image 36.png" alt="stub">
         <h1 class="stub__title">По вашему запросу ничего не найдено. Попробуйте изменить запрос или выбрать бренд в нашем каталоге</h1>
-        <a class="stub__link" href="/catalog.html">Перейти в каталог</a>
+        <a class="stub__link" href="catalog.html">Перейти в каталог</a>
       `;
         filterBrandContainer.appendChild(stub);
       }
