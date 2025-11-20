@@ -942,24 +942,45 @@ window.filterBrandProducts = function (animalId = null) {
     const searchBrandInput = document.querySelector(
       ".products__catalog__filter__brand__src__input"
     );
+    const filterBrandContainer = document.querySelector(
+      ".products__catalog__filter__brand__list"
+    );
     const filterBrandItems = document.querySelectorAll(
       ".products__catalog__filter__brand__item"
     );
 
     searchBrandInput.addEventListener("input", function (e) {
       const searchText = e.target.value.toLowerCase().trim();
+      let visibleItemsCount = 0;
 
-      for (const brandItem of filterBrandItems) {
-        const brandText = brandItem.querySelector(
+      for (const itemBrand of filterBrandItems) {
+        const brandText = itemBrand.querySelector(
           ".products__catalog__filter__brand__txt"
         );
         const brandName = brandText.textContent.toLowerCase();
 
         if (brandName.includes(searchText)) {
-          brandItem.style.display = "flex";
+          itemBrand.style.display = "flex";
+          visibleItemsCount++;
         } else {
-          brandItem.style.display = "none";
+          itemBrand.style.display = "none";
         }
+      }
+
+      const existingStub = filterBrandContainer.querySelector(".stub");
+      if (existingStub) {
+        existingStub.remove();
+      }
+
+      if (visibleItemsCount === 0 && searchText !== "") {
+        const stub = document.createElement("div");
+        stub.className = "stub";
+        stub.innerHTML = `
+        <img class="stub__img" src="./img/image 36.png" alt="stub">
+        <h1 class="stub__title">По вашему запросу ничего не найдено. Попробуйте изменить запрос или выбрать бренд в нашем каталоге</h1>
+        <a class="stub__link" href="/catalog.html">Перейти в каталог</a>
+      `;
+        filterBrandContainer.appendChild(stub);
       }
     });
   }
