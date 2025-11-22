@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
       window.filterCategoryAnimal(allProducts);
       autoApplyFilter();
       window.filterBrandProducts();
+      window.promotionalFilter();
     })
     .catch((error) => {
       console.error("Ошибка fetch:", error);
@@ -365,6 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
             window.filterCategoryAnimal(allProducts);
             autoApplyFilter();
             window.filterBrandProducts();
+            window.promotionalFilter();
           })
           .catch((error) => {
             console.error("Ошибка fetch:", error);
