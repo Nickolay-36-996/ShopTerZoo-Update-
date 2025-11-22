@@ -273,9 +273,6 @@ document.addEventListener("DOMContentLoaded", () => {
       background.appendChild(stubCatalog);
       paginationControl.style.display = "none";
 
-      if (allProducts.length > 0) {
-        stubCatalog.remove();
-      }
     } else {
       paginationControl.style.display = "flex";
     }
