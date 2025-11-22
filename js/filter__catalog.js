@@ -878,8 +878,13 @@ window.filterBrandProducts = function (animalId = null) {
           }
         }
 
-        let categoryFilters = "";
+        let animalFilter = animalId ? `&animal__in=${animalId}` : "";
 
+        if (!animalFilter && animalId) {
+          animalFilter = `&animal__in=${animalId}`;
+        }
+
+        let categoryFilters = "";
         const activeCategoryIndicators = document.querySelectorAll(
           ".products__catalog__filter__type__indicator__active"
         );
@@ -902,6 +907,29 @@ window.filterBrandProducts = function (animalId = null) {
           }
         }
 
+        let subcategoryFilters = "";
+        const activeSubcategoryIndicators = document.querySelectorAll(
+          ".products__catalog__filter__subcategory__indicator__active"
+        );
+
+        for (const subcategoryIndicator of activeSubcategoryIndicators) {
+          const subcategoryItem = subcategoryIndicator.closest(
+            ".food__subcategory__item"
+          );
+          if (subcategoryItem) {
+            const subcategoryText = subcategoryItem
+              .querySelector(".products__catalog__filter__brand__txt")
+              .textContent.trim();
+
+            const foundSubcategory = allFilteredProducts.find(
+              (item) => item.category && item.category.name === subcategoryText
+            );
+            if (foundSubcategory && foundSubcategory.category) {
+              subcategoryFilters += `&category__in=${foundSubcategory.category.id}`;
+            }
+          }
+        }
+
         let brandFilters = "";
         if (window.selectedBrands.length > 0) {
           for (const brandId of window.selectedBrands) {
@@ -909,11 +937,20 @@ window.filterBrandProducts = function (animalId = null) {
           }
         }
 
-        let animalFilter = animalId ? `&animal__in=${animalId}` : "";
+        let finalFilterUrl;
+        if (subcategoryFilters) {
+          finalFilterUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${animalFilter}${subcategoryFilters}${brandFilters}&page=1`;
+        } else if (categoryFilters) {
+          finalFilterUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${animalFilter}${categoryFilters}${brandFilters}&page=1`;
+        } else if (animalFilter) {
+          finalFilterUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${animalFilter}${brandFilters}&page=1`;
+        } else {
+          finalFilterUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${brandFilters}&page=1`;
+        }
 
-        const filterUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${animalFilter}${categoryFilters}${brandFilters}&page=1`;
+        console.log("Final filter URL:", finalFilterUrl);
 
-        fetch(filterUrl)
+        fetch(finalFilterUrl)
           .then((response) => {
             if (!response.ok)
               throw new Error(`HTTP status: ${response.status}`);
@@ -927,7 +964,7 @@ window.filterBrandProducts = function (animalId = null) {
               window.updatePagination(
                 filteredData,
                 1,
-                filterUrl.replace("&page=1", "")
+                finalFilterUrl.replace("&page=1", "")
               );
             }
           })
