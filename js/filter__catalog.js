@@ -177,9 +177,16 @@ window.filterCategoryAnimal = function () {
           }
         }
 
-        const apiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}${brandFilter}&page=1`;
+        let finalApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}${brandFilter}&page=1`;
 
-        fetch(apiUrl)
+        const isPromotionalActive = document
+          .querySelector(".promotional__item__indicator")
+          ?.classList.contains("promotional__item__indicator__active");
+        if (isPromotionalActive) {
+          finalApiUrl += "&sale__percent__gt=0";
+        }
+
+        fetch(finalApiUrl)
           .then((response) => {
             if (!response.ok)
               throw new Error(`HTTP status: ${response.status}`);
@@ -190,7 +197,7 @@ window.filterCategoryAnimal = function () {
               window.productItems(data.results);
             }
             if (typeof window.updatePagination === "function") {
-              window.updatePagination(data, 1, apiUrl.replace("&page=1", ""));
+              window.updatePagination(data, 1, finalApiUrl.replace("&page=1", ""));
             }
           })
           .catch((error) => {
@@ -311,9 +318,16 @@ window.filterCategoryAnimal = function () {
                   }
                 }
 
-                const typeApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}${categoryFilters}${brandFilter}&page=1`;
+                let finalTypeApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}${categoryFilters}${brandFilter}&page=1`;
 
-                fetch(typeApiUrl)
+                const isPromotionalActive = document
+                  .querySelector(".promotional__item__indicator")
+                  ?.classList.contains("promotional__item__indicator__active");
+                if (isPromotionalActive) {
+                  finalTypeApiUrl += "&sale__percent__gt=0";
+                }
+
+                fetch(finalTypeApiUrl)
                   .then((response) => {
                     if (!response.ok)
                       throw new Error(`HTTP status: ${response.status}`);
@@ -327,7 +341,7 @@ window.filterCategoryAnimal = function () {
                       window.updatePagination(
                         filteredData,
                         1,
-                        typeApiUrl.replace("&page=1", "")
+                        finalTypeApiUrl.replace("&page=1", "")
                       );
                     }
                     window.filterBrandProducts(animalId);
@@ -546,9 +560,16 @@ window.filterCategoryAnimal = function () {
                   }
                 }
 
-                const typeApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}${categoryFilters}${brandFilter}&page=1`;
+                let finalTypeApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}${categoryFilters}${brandFilter}&page=1`;
 
-                fetch(typeApiUrl)
+                const isPromotionalActive = document
+                  .querySelector(".promotional__item__indicator")
+                  ?.classList.contains("promotional__item__indicator__active");
+                if (isPromotionalActive) {
+                  finalTypeApiUrl += "&sale__percent__gt=0";
+                }
+
+                fetch(finalTypeApiUrl)
                   .then((response) => {
                     if (!response.ok)
                       throw new Error(`HTTP status: ${response.status}`);
@@ -562,7 +583,7 @@ window.filterCategoryAnimal = function () {
                       window.updatePagination(
                         filteredData,
                         1,
-                        typeApiUrl.replace("&page=1", "")
+                        finalTypeApiUrl.replace("&page=1", "")
                       );
                     }
                     window.filterBrandProducts(animalId);
@@ -709,9 +730,18 @@ window.filterCategoryAnimal = function () {
                     }
                   }
 
-                  const typeApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&category__in=${typeId}${brandFilter}&page=1`;
+                  let finalTypeApiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&category__in=${typeId}${brandFilter}&page=1`;
 
-                  fetch(typeApiUrl)
+                  const isPromotionalActive = document
+                    .querySelector(".promotional__item__indicator")
+                    ?.classList.contains(
+                      "promotional__item__indicator__active"
+                    );
+                  if (isPromotionalActive) {
+                    finalTypeApiUrl += "&sale__percent__gt=0";
+                  }
+
+                  fetch(finalTypeApiUrl)
                     .then((response) => {
                       if (!response.ok)
                         throw new Error(`HTTP status: ${response.status}`);
@@ -725,7 +755,7 @@ window.filterCategoryAnimal = function () {
                         window.updatePagination(
                           filteredData,
                           1,
-                          typeApiUrl.replace("&page=1", "")
+                          finalTypeApiUrl.replace("&page=1", "")
                         );
                       }
                       window.filterBrandProducts(animalId);
@@ -949,6 +979,13 @@ window.filterBrandProducts = function (animalId = null) {
         }
 
         console.log("Final filter URL:", finalFilterUrl);
+
+        const isPromotionalActive = document
+          .querySelector(".promotional__item__indicator")
+          ?.classList.contains("promotional__item__indicator__active");
+        if (isPromotionalActive) {
+          finalFilterUrl += "&sale__percent__gt=0";
+        }
 
         fetch(finalFilterUrl)
           .then((response) => {

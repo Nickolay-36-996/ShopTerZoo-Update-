@@ -283,6 +283,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         window.selectedBrands = [];
 
+        const promotionalIndicator = document.querySelector(
+          ".promotional__item__indicator"
+        );
+        if (promotionalIndicator) {
+          promotionalIndicator.classList.remove(
+            "promotional__item__indicator__active"
+          );
+        }
+
         const allAnimalItems = document.querySelectorAll(
           ".animal__category__catalog"
         );
