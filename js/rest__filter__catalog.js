@@ -145,3 +145,40 @@ window.promotionalFilter = function () {
       });
   });
 };
+
+window.orderFilter = function () {
+  const select = document.querySelector(".products__catalog__sort__select");
+  const selectList = document.querySelector(
+    ".products__catalog__sort__select__list"
+  );
+  const selectFilter = document.querySelectorAll(
+    ".products__catalog__sort__select__list__item"
+  );
+
+  select.addEventListener("click", function (e) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    selectList.classList.toggle(
+      "products__catalog__sort__select__list__active"
+    );
+
+    if (selectFilter) {
+      for (const order of selectFilter) {
+        order.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const selectMap = {
+            date: "?order=date_create",
+            title_asc: "?order=title",
+            title_desc: "?order=-title",
+            price_asc: "?order=price",
+            price_desc: "?order=-price",
+            popularity: "?order=-sales_counter",
+          };
+        });
+      }
+    }
+  });
+};

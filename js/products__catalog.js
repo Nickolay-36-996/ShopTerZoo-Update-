@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
       autoApplyFilter();
       window.filterBrandProducts();
       window.promotionalFilter();
+      window.orderFilter();
     })
     .catch((error) => {
       console.error("Ошибка fetch:", error);
@@ -376,6 +377,7 @@ document.addEventListener("DOMContentLoaded", () => {
             autoApplyFilter();
             window.filterBrandProducts();
             window.promotionalFilter();
+            window.orderFilter();
           })
           .catch((error) => {
             console.error("Ошибка fetch:", error);
