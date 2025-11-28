@@ -112,8 +112,9 @@ window.promotionalFilter = function () {
       brandFilters = `&brand_id__in=${window.selectedBrands.join(",")}`;
     }
 
-    let url =
-      "https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create";
+    let url = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?${
+      window.currentOrder || "order=date_create"
+    }`;
 
     if (isActive) {
       url += "&sale__percent__gt=0";
@@ -154,6 +155,20 @@ window.orderFilter = function () {
   const selectFilter = document.querySelectorAll(
     ".products__catalog__sort__select__list__item"
   );
+  const selectFilterActive = document.querySelector(
+    ".products__catalog__sort__select__active"
+  );
+
+  window.currentOrder = "order=date_create";
+
+  const selectMap = {
+    "дате добавления": "order=date_create",
+    "названию: «от А до Я»": "order=title",
+    "названию: «от Я до А»": "order=-title",
+    "цене по возр.": "order=price",
+    "цене по убыв.": "order=-price",
+    популярности: "order=-sales_counter",
+  };
 
   select.addEventListener("click", function (e) {
     e.stopPropagation();
@@ -169,14 +184,110 @@ window.orderFilter = function () {
           e.preventDefault();
           e.stopPropagation();
 
-          const selectMap = {
-            date: "?order=date_create",
-            title_asc: "?order=title",
-            title_desc: "?order=-title",
-            price_asc: "?order=price",
-            price_desc: "?order=-price",
-            popularity: "?order=-sales_counter",
-          };
+          selectList.classList.remove(
+            "products__catalog__sort__select__list__active"
+          );
+
+          const selectedElement = this.querySelector(
+            ".products__catalog__sort__select__list__item__txt"
+          );
+          const selectedOrder = selectedElement.textContent.trim();
+
+          selectFilterActive.textContent = selectedOrder;
+
+          const orderValue = selectMap[selectedOrder];
+
+          window.currentOrder = orderValue;
+
+          console.log("выбранный фильтр", window.currentOrder);
+
+          let animalFilter = "";
+          const activeAnimalIndicator = document.querySelector(
+            ".products__catalog__filter__type__indicator__active"
+          );
+          if (activeAnimalIndicator) {
+            const animalItem = activeAnimalIndicator.closest(
+              ".products__catalog__filter__type__list__item"
+            );
+            if (animalItem) {
+              const animalText = animalItem
+                .querySelector(".products__catalog__filter__type__txt")
+                .textContent.trim()
+                .toLowerCase();
+              const animalFilterMap = {
+                собаки: "1",
+                кошки: "2",
+                грызуны: "3",
+                птицы: "4",
+                рыбки: "5",
+              };
+              const animalId = animalFilterMap[animalText];
+              if (animalId) {
+                animalFilter = `&animal__in=${animalId}`;
+              }
+            }
+          }
+
+          let brandFilter = "";
+          if (window.selectedBrands && window.selectedBrands.length > 0) {
+            brandFilter = `&brand_id__in=${window.selectedBrands.join(",")}`;
+          }
+
+          let promotionalFilter = "";
+          const isPromotionalActive = document
+            .querySelector(".promotional__item__indicator")
+            ?.classList.contains("promotional__item__indicator__active");
+          if (isPromotionalActive) {
+            promotionalFilter = "&sale__percent__gt=0";
+          }
+
+          let categoryFilter = "";
+          const activeSubcategoryIndicators = document.querySelectorAll(
+            ".products__catalog__filter__subcategory__indicator__active"
+          );
+          const activeCategoryIndicators = document.querySelectorAll(
+            ".products__catalog__filter__type__indicator__active"
+          );
+
+          if (activeSubcategoryIndicators.length > 0) {
+            const categoryIds = [];
+            for (const subcategoryIndicator of activeSubcategoryIndicators) {
+              const subcategoryItem = subcategoryIndicator.closest(
+                ".food__subcategory__item"
+              );
+              if (subcategoryItem) {
+                const subcategoryText = subcategoryItem
+                  .querySelector(".products__catalog__filter__brand__txt")
+                  .textContent.trim();
+              }
+            }
+            if (categoryIds.length > 0) {
+              categoryFilter = `&category__in=${categoryIds.join(",")}`;
+            }
+          } else if (activeCategoryIndicators.length > 0) {
+            const categoryIds = [];
+            for (const categoryIndicator of activeCategoryIndicators) {
+              const categoryItem = categoryIndicator.closest(
+                ".products__catalog__filter__type__list__item"
+              );
+              if (
+                categoryItem &&
+                !categoryItem.closest(".food__category__item")
+              ) {
+                const categoryText = categoryItem
+                  .querySelector(".products__catalog__filter__type__txt")
+                  .textContent.trim();
+              }
+            }
+            if (categoryIds.length > 0) {
+              categoryFilter = `&category__in=${categoryIds.join(",")}`;
+            }
+          }
+
+          const loadUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?${window.currentOrder}${animalFilter}${brandFilter}${promotionalFilter}${categoryFilter}`;
+
+          console.log("Final URL with all filters:", loadUrl);
+          window.loadProducts(loadUrl);
         });
       }
     }

@@ -2,31 +2,32 @@
 document.addEventListener("DOMContentLoaded", () => {
   let allProducts = [];
 
-  fetch(
-    "https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create"
-  )
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      console.log("page count:", data);
-      if (data.results && data.results.length > 0) {
-        allProducts = data.results;
-      }
-      pagesCount(data);
-      productItems(allProducts);
-      window.filterCategoryAnimal(allProducts);
-      autoApplyFilter();
-      window.filterBrandProducts();
-      window.promotionalFilter();
-      window.orderFilter();
-    })
-    .catch((error) => {
-      console.error("Ошибка fetch:", error);
-    });
+  window.loadProducts = function (
+    loadUrl = "https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create"
+  ) {
+    fetch(loadUrl)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("page count:", data);
+        if (data.results && data.results.length > 0) {
+          allProducts = data.results;
+        }
+        pagesCount(data);
+        productItems(allProducts);
+        window.filterCategoryAnimal(allProducts);
+        autoApplyFilter();
+        window.filterBrandProducts();
+        window.promotionalFilter();
+      })
+      .catch((error) => {
+        console.error("Ошибка fetch:", error);
+      });
+  };
 
   function autoApplyFilter() {
     const savedCategory = localStorage.getItem("autoFilterCategory");
@@ -1246,4 +1247,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   };
+  window.loadProducts();
+  window.orderFilter();
 });
