@@ -378,7 +378,7 @@ document.addEventListener("DOMContentLoaded", () => {
             autoApplyFilter();
             window.filterBrandProducts();
             window.promotionalFilter();
-            window.orderFilter();
+            window.orderFilter(allProducts);
           })
           .catch((error) => {
             console.error("Ошибка fetch:", error);
@@ -1248,5 +1248,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
   window.loadProducts();
-  window.orderFilter();
+  window.orderFilter(allProducts);
 });

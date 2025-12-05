@@ -3569,6 +3569,13 @@ body {
   cursor: pointer;
 }
 
+.products__catalog__filter__animal__list__item {
+  display: flex;
+  flex-direction: row;
+  gap: 9px;
+  cursor: pointer;
+}
+
 .products__catalog__filter__type__indicator {
   width: 18px;
   height: 18px;

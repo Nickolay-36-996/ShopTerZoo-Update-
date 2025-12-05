@@ -147,7 +147,7 @@ window.promotionalFilter = function () {
   });
 };
 
-window.orderFilter = function () {
+window.orderFilter = function (allProducts) {
   const select = document.querySelector(".products__catalog__sort__select");
   const selectList = document.querySelector(
     ".products__catalog__sort__select__list"
@@ -180,7 +180,7 @@ window.orderFilter = function () {
 
     if (selectFilter) {
       for (const order of selectFilter) {
-        order.addEventListener("click", function (e) {
+        order.addEventListener("click", async function (e) {
           e.preventDefault();
           e.stopPropagation();
 
@@ -196,15 +196,15 @@ window.orderFilter = function () {
           selectFilterActive.textContent = selectedOrder;
 
           const orderValue = selectMap[selectedOrder];
-
           window.currentOrder = orderValue;
 
           console.log("выбранный фильтр", window.currentOrder);
 
           let animalFilter = "";
           const activeAnimalIndicator = document.querySelector(
-            ".products__catalog__filter__type__indicator__active"
+            ".products__catalog__filter__type__list .products__catalog__filter__type__indicator__active"
           );
+
           if (activeAnimalIndicator) {
             const animalItem = activeAnimalIndicator.closest(
               ".products__catalog__filter__type__list__item"
@@ -224,70 +224,175 @@ window.orderFilter = function () {
               const animalId = animalFilterMap[animalText];
               if (animalId) {
                 animalFilter = `&animal__in=${animalId}`;
+
+                const allCategoryProducts = await window.getAllFilteredProducts(
+                  animalId
+                );
+
+                let categoryFilter = "";
+
+                const activeSubcategoryIndicators = document.querySelectorAll(
+                  ".products__catalog__filter__subcategory__indicator__active"
+                );
+
+                const activeCategoryIndicators = document.querySelectorAll(
+                  ".products__catalog__filter__type__indicator__active"
+                );
+
+                const categoryIds = [];
+
+                if (activeSubcategoryIndicators.length > 0) {
+                  for (const subcategoryIndicator of activeSubcategoryIndicators) {
+                    const subcategoryItem = subcategoryIndicator.closest(
+                      ".food__subcategory__item"
+                    );
+                    if (subcategoryItem) {
+                      const subcategoryText = subcategoryItem
+                        .querySelector(".products__catalog__filter__brand__txt")
+                        .textContent.trim();
+
+                      const foundProduct = allCategoryProducts.find(
+                        (item) =>
+                          item.category &&
+                          item.category.name === subcategoryText
+                      );
+                      if (
+                        foundProduct &&
+                        foundProduct.category &&
+                        !categoryIds.includes(foundProduct.category.id)
+                      ) {
+                        categoryIds.push(foundProduct.category.id);
+                      }
+                    }
+                  }
+                } else if (activeCategoryIndicators.length > 0) {
+                  for (const categoryIndicator of activeCategoryIndicators) {
+                    const categoryItem = categoryIndicator.closest(
+                      ".products__catalog__filter__type__list__item, .food__category__item"
+                    );
+                    if (categoryItem) {
+                      const categoryText = categoryItem
+                        .querySelector(".products__catalog__filter__type__txt")
+                        .textContent.trim();
+
+                      const foundProduct = allCategoryProducts.find(
+                        (item) =>
+                          item.category && item.category.name === categoryText
+                      );
+                      if (
+                        foundProduct &&
+                        foundProduct.category &&
+                        !categoryIds.includes(foundProduct.category.id)
+                      ) {
+                        categoryIds.push(foundProduct.category.id);
+                      }
+                    }
+                  }
+                }
+
+                if (categoryIds.length > 0) {
+                  categoryFilter = `&category__in=${categoryIds.join(",")}`;
+                }
+
+                let brandFilter = "";
+                if (window.selectedBrands && window.selectedBrands.length > 0) {
+                  brandFilter = `&brand_id__in=${window.selectedBrands.join(
+                    ","
+                  )}`;
+                }
+
+                let saleFilter = "";
+                const promotionalIndicator = document.querySelector(
+                  ".promotional__item__indicator"
+                );
+                if (
+                  promotionalIndicator &&
+                  promotionalIndicator.classList.contains(
+                    "promotional__item__indicator__active"
+                  )
+                ) {
+                  saleFilter = "&sale__percent__gt=0";
+                }
+
+                const baseUrl =
+                  "https://oliver1ck.pythonanywhere.com/api/get_products_filter/";
+                let finalUrl = `${baseUrl}?${window.currentOrder}${animalFilter}${categoryFilter}${brandFilter}${saleFilter}&page=1`;
+
+                console.log("Final URL with all filters:", finalUrl);
+
+                fetch(finalUrl)
+                  .then((response) => {
+                    if (!response.ok)
+                      throw new Error(`HTTP status: ${response.status}`);
+                    return response.json();
+                  })
+                  .then((data) => {
+                    if (typeof window.productItems === "function") {
+                      window.productItems(data.results);
+                    }
+                    if (typeof window.updatePagination === "function") {
+                      window.updatePagination(
+                        data,
+                        1,
+                        finalUrl.replace("&page=1", "")
+                      );
+                    }
+                  })
+                  .catch((error) => {
+                    console.error(
+                      "Ошибка загрузки отфильтрованных товаров:",
+                      error
+                    );
+                  });
               }
             }
-          }
-
-          let brandFilter = "";
-          if (window.selectedBrands && window.selectedBrands.length > 0) {
-            brandFilter = `&brand_id__in=${window.selectedBrands.join(",")}`;
-          }
-
-          let promotionalFilter = "";
-          const isPromotionalActive = document
-            .querySelector(".promotional__item__indicator")
-            ?.classList.contains("promotional__item__indicator__active");
-          if (isPromotionalActive) {
-            promotionalFilter = "&sale__percent__gt=0";
-          }
-
-          let categoryFilter = "";
-          const activeSubcategoryIndicators = document.querySelectorAll(
-            ".products__catalog__filter__subcategory__indicator__active"
-          );
-          const activeCategoryIndicators = document.querySelectorAll(
-            ".products__catalog__filter__type__indicator__active"
-          );
-
-          if (activeSubcategoryIndicators.length > 0) {
-            const categoryIds = [];
-            for (const subcategoryIndicator of activeSubcategoryIndicators) {
-              const subcategoryItem = subcategoryIndicator.closest(
-                ".food__subcategory__item"
-              );
-              if (subcategoryItem) {
-                const subcategoryText = subcategoryItem
-                  .querySelector(".products__catalog__filter__brand__txt")
-                  .textContent.trim();
-              }
+          } else {
+            let brandFilter = "";
+            if (window.selectedBrands && window.selectedBrands.length > 0) {
+              brandFilter = `&brand_id__in=${window.selectedBrands.join(",")}`;
             }
-            if (categoryIds.length > 0) {
-              categoryFilter = `&category__in=${categoryIds.join(",")}`;
+
+            let saleFilter = "";
+            const promotionalIndicator = document.querySelector(
+              ".promotional__item__indicator"
+            );
+            if (
+              promotionalIndicator &&
+              promotionalIndicator.classList.contains(
+                "promotional__item__indicator__active"
+              )
+            ) {
+              saleFilter = "&sale__percent__gt=0";
             }
-          } else if (activeCategoryIndicators.length > 0) {
-            const categoryIds = [];
-            for (const categoryIndicator of activeCategoryIndicators) {
-              const categoryItem = categoryIndicator.closest(
-                ".products__catalog__filter__type__list__item"
-              );
-              if (
-                categoryItem &&
-                !categoryItem.closest(".food__category__item")
-              ) {
-                const categoryText = categoryItem
-                  .querySelector(".products__catalog__filter__type__txt")
-                  .textContent.trim();
-              }
-            }
-            if (categoryIds.length > 0) {
-              categoryFilter = `&category__in=${categoryIds.join(",")}`;
-            }
+
+            const baseUrl =
+              "https://oliver1ck.pythonanywhere.com/api/get_products_filter/";
+            let finalUrl = `${baseUrl}?${window.currentOrder}${brandFilter}${saleFilter}&page=1`;
+
+            console.log("Final URL (no animal filter):", finalUrl);
+
+            fetch(finalUrl)
+              .then((response) => {
+                if (!response.ok)
+                  throw new Error(`HTTP status: ${response.status}`);
+                return response.json();
+              })
+              .then((data) => {
+                if (typeof window.productItems === "function") {
+                  window.productItems(data.results);
+                }
+                if (typeof window.updatePagination === "function") {
+                  window.updatePagination(
+                    data,
+                    1,
+                    finalUrl.replace("&page=1", "")
+                  );
+                }
+              })
+              .catch((error) => {
+                console.error("Ошибка загрузки товаров:", error);
+              });
           }
-
-          const loadUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?${window.currentOrder}${animalFilter}${brandFilter}${promotionalFilter}${categoryFilter}`;
-
-          console.log("Final URL with all filters:", loadUrl);
-          window.loadProducts(loadUrl);
         });
       }
     }
