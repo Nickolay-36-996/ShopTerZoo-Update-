@@ -113,6 +113,109 @@ window.filterCategoryAnimal = function () {
       const isMainAnimalList =
         parentList && !parentList.classList.contains("filter__type__list");
 
+      const currentIndicator = this.querySelector(
+        ".products__catalog__filter__type__indicator"
+      );
+
+      const isAlreadyActive =
+        currentIndicator &&
+        currentIndicator.classList.contains(
+          "products__catalog__filter__type__indicator__active"
+        );
+
+      if (isAlreadyActive && isMainAnimalList) {
+        if (
+          window.currentOrder &&
+          window.currentOrder !== "order=date_create"
+        ) {
+          window.currentOrder = "order=date_create";
+          const selectFilterActive = document.querySelector(
+            ".products__catalog__sort__select__active"
+          );
+          if (selectFilterActive) {
+            selectFilterActive.textContent = "дате добавления";
+          }
+        }
+
+        const promotionalIndicator = document.querySelector(
+          ".promotional__item__indicator"
+        );
+        if (promotionalIndicator) {
+          promotionalIndicator.classList.remove(
+            "promotional__item__indicator__active"
+          );
+        }
+
+        window.selectedBrands = [];
+        const allBrandIndicators = document.querySelectorAll(
+          ".products__catalog__filter__brand__indicator"
+        );
+        for (const indicator of allBrandIndicators) {
+          indicator.classList.remove(
+            "products__catalog__filter__brand__indicator__active"
+          );
+        }
+
+        const allSubcategoryIndicators = document.querySelectorAll(
+          ".products__catalog__filter__subcategory__indicator"
+        );
+        for (const indicator of allSubcategoryIndicators) {
+          indicator.classList.remove(
+            "products__catalog__filter__subcategory__indicator__active"
+          );
+        }
+
+        const allCategoryIndicators = document.querySelectorAll(
+          ".products__catalog__filter__type__indicator__active"
+        );
+        for (const indicator of allCategoryIndicators) {
+          indicator.classList.remove(
+            "products__catalog__filter__type__indicator__active"
+          );
+        }
+
+        const animalText = this.querySelector(
+          ".products__catalog__filter__type__txt"
+        )
+          .textContent.trim()
+          .toLowerCase();
+        const animalFilterMap = {
+          собаки: "1",
+          кошки: "2",
+          грызуны: "3",
+          птицы: "4",
+          рыбки: "5",
+        };
+        const animalId = animalFilterMap[animalText];
+
+        if (animalId) {
+          const url = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&animal__in=${animalId}&page=1`;
+
+          fetch(url)
+            .then((response) => {
+              if (!response.ok)
+                throw new Error(`HTTP status: ${response.status}`);
+              return response.json();
+            })
+            .then((data) => {
+              if (typeof window.productItems === "function") {
+                window.productItems(data.results);
+              }
+              if (typeof window.updatePagination === "function") {
+                window.updatePagination(data, 1, url.replace("&page=1", ""));
+              }
+              if (typeof window.filterBrandProducts === "function") {
+                window.filterBrandProducts(animalId);
+              }
+            })
+            .catch((error) => {
+              console.error("Ошибка загрузки товаров:", error);
+            });
+        }
+
+        return;
+      }
+
       if (
         isMainAnimalList &&
         window.currentOrder &&
@@ -137,10 +240,6 @@ window.filterCategoryAnimal = function () {
           "products__catalog__filter__type__indicator__active"
         );
       }
-
-      const currentIndicator = this.querySelector(
-        ".products__catalog__filter__type__indicator"
-      );
 
       if (currentIndicator) {
         currentIndicator.classList.add(
