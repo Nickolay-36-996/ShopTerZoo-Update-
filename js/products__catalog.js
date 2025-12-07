@@ -358,6 +358,24 @@ document.addEventListener("DOMContentLoaded", () => {
           catalogTitle.textContent = "Каталог товаров";
         }
 
+        window.currentOrder = "order=date_create";
+
+        const selectFilterActive = document.querySelector(
+          ".products__catalog__sort__select__active"
+        );
+        if (selectFilterActive) {
+          selectFilterActive.textContent = "дате добавления";
+        }
+
+        const selectList = document.querySelector(
+          ".products__catalog__sort__select__list"
+        );
+        if (selectList) {
+          selectList.classList.remove(
+            "products__catalog__sort__select__list__active"
+          );
+        }
+
         fetch(
           "https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create"
         )
@@ -379,6 +397,9 @@ document.addEventListener("DOMContentLoaded", () => {
             window.filterBrandProducts();
             window.promotionalFilter();
             window.orderFilter(allProducts);
+            if (typeof window.orderFilter === "function") {
+              window.orderFilter(allProducts);
+            }
           })
           .catch((error) => {
             console.error("Ошибка fetch:", error);
