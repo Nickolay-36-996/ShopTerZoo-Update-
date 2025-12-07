@@ -739,6 +739,10 @@
   background-color: #347c84;
 }
 
+.stub__catalog__img {
+  mix-blend-mode: multiply;
+}
+
 @media (max-width: 992px) {
   .products__catalog__title {
     font-size: 34px;
