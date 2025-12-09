@@ -15,10 +15,13 @@ window.promotionalFilter = function () {
       "promotional__item__indicator__active"
     );
 
-    let animalId = "";
+    let animalFilter = "";
+    let animalId = null;
+
     const activeAnimalIndicator = document.querySelector(
       ".products__catalog__filter__type__indicator__active"
     );
+
     if (activeAnimalIndicator) {
       const animalItem = activeAnimalIndicator.closest(
         ".products__catalog__filter__type__list__item"
@@ -36,95 +39,156 @@ window.promotionalFilter = function () {
           рыбки: "5",
         };
         animalId = animalFilterMap[animalText];
+        if (animalId) {
+          animalFilter = `&animal__in=${animalId}`;
+        }
       }
     }
 
-    let categoryFilters = "";
-    const activeSubcategoryIndicators = document.querySelectorAll(
-      ".products__catalog__filter__subcategory__indicator__active"
-    );
-    const activeCategoryIndicators = document.querySelectorAll(
-      ".products__catalog__filter__type__indicator__active"
-    );
+    if (!animalId) {
+      const activeAnimalItem = document.querySelector(
+        ".animal__category__catalog__active"
+      );
+      if (activeAnimalItem) {
+        const animalText = activeAnimalItem
+          .querySelector(".animal__category__catalog__title")
+          .textContent.trim()
+          .toLowerCase();
+        const animalFilterMap = {
+          собаки: "1",
+          кошки: "2",
+          грызуны: "3",
+          птицы: "4",
+          рыбки: "5",
+        };
+        animalId = animalFilterMap[animalText];
+        if (animalId) {
+          animalFilter = `&animal__in=${animalId}`;
+        }
+      }
+    }
 
-    if (activeSubcategoryIndicators.length > 0) {
+    let categoryFilter = "";
+
+    if (animalId) {
+      const allCategoryProducts = await window.getAllFilteredProducts(animalId);
+
+      const activeSubcategoryIndicators = document.querySelectorAll(
+        ".products__catalog__filter__subcategory__indicator__active"
+      );
+
       const categoryIds = [];
-      for (const subcategoryIndicator of activeSubcategoryIndicators) {
-        const subcategoryItem = subcategoryIndicator.closest(
-          ".food__subcategory__item"
-        );
-        if (subcategoryItem) {
-          const subcategoryText = subcategoryItem
-            .querySelector(".products__catalog__filter__brand__txt")
-            .textContent.trim();
 
-          if (animalId) {
-            const allProducts = await window.getAllFilteredProducts(animalId);
-            const foundCategory = allProducts.find(
+      if (activeSubcategoryIndicators.length > 0) {
+        for (const subcategoryIndicator of activeSubcategoryIndicators) {
+          const subcategoryItem = subcategoryIndicator.closest(
+            ".food__subcategory__item"
+          );
+          if (subcategoryItem) {
+            const subcategoryText = subcategoryItem
+              .querySelector(".products__catalog__filter__brand__txt")
+              .textContent.trim();
+
+            const foundProduct = allCategoryProducts.find(
               (item) => item.category && item.category.name === subcategoryText
             );
             if (
-              foundCategory &&
-              foundCategory.category &&
-              !categoryIds.includes(foundCategory.category.id)
+              foundProduct &&
+              foundProduct.category &&
+              !categoryIds.includes(foundProduct.category.id)
             ) {
-              categoryIds.push(foundCategory.category.id);
+              categoryIds.push(foundProduct.category.id);
             }
           }
         }
-      }
-      if (categoryIds.length > 0) {
-        categoryFilters = `&category__in=${categoryIds.join(",")}`;
-      }
-    } else if (activeCategoryIndicators.length > 0) {
-      const categoryIds = [];
-      for (const categoryIndicator of activeCategoryIndicators) {
-        const categoryItem = categoryIndicator.closest(
-          ".products__catalog__filter__type__list__item"
+      } else {
+        const activeCategoryIndicators = document.querySelectorAll(
+          ".products__catalog__filter__type__indicator__active"
         );
-        if (categoryItem) {
-          const categoryText = categoryItem
-            .querySelector(".products__catalog__filter__type__txt")
-            .textContent.trim();
 
-          if (animalId) {
-            const allProducts = await window.getAllFilteredProducts(animalId);
-            const foundCategory = allProducts.find(
-              (item) => item.category && item.category.name === categoryText
+        if (activeCategoryIndicators.length > 0) {
+          for (const categoryIndicator of activeCategoryIndicators) {
+            const categoryItem = categoryIndicator.closest(
+              ".products__catalog__filter__type__list__item, .food__category__item"
             );
-            if (
-              foundCategory &&
-              foundCategory.category &&
-              !categoryIds.includes(foundCategory.category.id)
-            ) {
-              categoryIds.push(foundCategory.category.id);
+            if (categoryItem) {
+              if (categoryItem.classList.contains("food__category__item")) {
+                const subcategoryItems = categoryItem.querySelectorAll(
+                  ".food__subcategory__item"
+                );
+                for (const subcategoryItem of subcategoryItems) {
+                  const subcategoryText = subcategoryItem
+                    .querySelector(".products__catalog__filter__brand__txt")
+                    .textContent.trim();
+
+                  const foundProduct = allCategoryProducts.find(
+                    (item) =>
+                      item.category && item.category.name === subcategoryText
+                  );
+                  if (
+                    foundProduct &&
+                    foundProduct.category &&
+                    !categoryIds.includes(foundProduct.category.id)
+                  ) {
+                    categoryIds.push(foundProduct.category.id);
+                  }
+                }
+              } else {
+                const categoryText = categoryItem
+                  .querySelector(".products__catalog__filter__type__txt")
+                  .textContent.trim();
+
+                const foundProduct = allCategoryProducts.find(
+                  (item) => item.category && item.category.name === categoryText
+                );
+                if (
+                  foundProduct &&
+                  foundProduct.category &&
+                  !categoryIds.includes(foundProduct.category.id)
+                ) {
+                  categoryIds.push(foundProduct.category.id);
+                }
+              }
             }
           }
         }
       }
+
       if (categoryIds.length > 0) {
-        categoryFilters = `&category__in=${categoryIds.join(",")}`;
+        categoryFilter = categoryIds
+          .map((id) => `&category_id__in=${id}`)
+          .join("");
       }
     }
 
-    let brandFilters = "";
+    let brandFilter = "";
     if (window.selectedBrands && window.selectedBrands.length > 0) {
-      brandFilters = `&brand_id__in=${window.selectedBrands.join(",")}`;
+      brandFilter = window.selectedBrands
+        .map((id) => `&brand_id__in=${id}`)
+        .join("");
     }
 
     let url = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?${
       window.currentOrder || "order=date_create"
     }`;
 
+    if (animalFilter) {
+      url += animalFilter;
+    }
+
+    if (categoryFilter) {
+      url += categoryFilter;
+    }
+
+    if (brandFilter) {
+      url += brandFilter;
+    }
+
     if (isActive) {
       url += "&sale__percent__gt=0";
     }
 
-    if (animalId) {
-      url += `&animal__in=${animalId}`;
-    }
-
-    url += categoryFilters + brandFilters;
+    url += "&page=1";
 
     console.log("Promotional filter URL:", url);
 
@@ -138,7 +202,7 @@ window.promotionalFilter = function () {
           window.productItems(data.results);
         }
         if (typeof window.updatePagination === "function") {
-          window.updatePagination(data, 1, url + "&page=1");
+          window.updatePagination(data, 1, url.replace("&page=1", ""));
         }
       })
       .catch((error) => {
