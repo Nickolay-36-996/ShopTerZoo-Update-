@@ -950,6 +950,7 @@ window.filterBrandProducts = function (animalId = null) {
       }
 
       applyBrandFilters(brandMap, animalId, allProducts);
+      searchBrandFilter();
     });
   } else {
     fetch("https://oliver1ck.pythonanywhere.com/api/get_brands_list/")
