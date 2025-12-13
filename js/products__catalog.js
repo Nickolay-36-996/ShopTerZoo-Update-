@@ -392,10 +392,20 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             pagesCount(data);
             productItems(allProducts);
-            window.filterCategoryAnimal(allProducts);
             autoApplyFilter();
             window.filterBrandProducts();
-            window.promotionalFilter();
+            const promotionalLabel = document.querySelector(
+              ".promotional__item__lbl"
+            );
+            if (promotionalLabel) {
+              const newPromotionalLabel = promotionalLabel.cloneNode(true);
+              promotionalLabel.parentNode.replaceChild(
+                newPromotionalLabel,
+                promotionalLabel
+              );
+
+              window.promotionalFilter();
+            }
             window.orderFilter(allProducts);
             if (typeof window.orderFilter === "function") {
               window.orderFilter(allProducts);
