@@ -283,7 +283,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ".popular__products__card__quantity__active"
         );
 
-        const saleBadge = card.querySelector(".new__product__sale__badge");
+        const saleBadge = card.querySelector(".popular__product__sale__badge");
 
         let price = 0;
         let oldPrice = 0;
@@ -317,9 +317,13 @@ document.addEventListener("DOMContentLoaded", () => {
           price: price,
           oldPrice: oldPrice,
           packaging: packaging,
-          hasPromotion: hasPromotion !== null,
+          hasPromotion: hasPromotion,
           title: product.title,
           image: product.image_prev,
+          basePrice: parseFloat(product.price) || 0,
+          discountPercent: product.sale?.percent || 0,
+          countitemproduct_set: product.countitemproduct_set || [],
+          count: 1,
         };
 
         let basketItems = JSON.parse(localStorage.getItem("basketItem")) || [];

@@ -5,57 +5,28 @@ document.addEventListener("DOMContentLoaded", () => {
   let fullPrice = 0;
   let fullOldPrice = 0;
 
-  window.updateBasketDisplay = function () {
-    fetchAllProducts()
-      .then((allProducts) => {
-        const basketItems = getBasketItemIds();
-        if (basketItems.length > 0) {
-          showBasketItems(allProducts);
-        }
-        return;
-      })
-      .catch((error) => {
-        console.error("Ошибка обновления корзины:", error);
-      });
-  };
-
-  async function fetchAllProducts() {
-    let allProducts = [];
-    let nextUrl =
-      "https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create";
-
-    try {
-      while (nextUrl) {
-        const response = await fetch(nextUrl);
-        if (!response.ok)
-          throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-
-        if (data.results && data.results.length > 0) {
-          allProducts = [...allProducts, ...data.results];
-        }
-
-        nextUrl = data.next;
-      }
-      return allProducts;
-    } catch (error) {
-      console.error("Ошибка при загрузке товаров:", error);
-      throw error;
-    }
+  function getBasketFromStorage() {
+    const items = JSON.parse(localStorage.getItem("basketItem")) || [];
+    console.log("Товаров в корзине из localStorage:", items.length);
+    return items;
   }
 
-  fetchAllProducts()
-    .then((allProducts) => {
-      console.log("Всего товаров загружено:", allProducts.length);
-      const basketItems = getBasketItemIds();
-      console.log("Товар в корзине", basketItems.length);
-      window.allProducts = allProducts;
+  window.updateBasketDisplay = function () {
+    const basketItems = getBasketFromStorage();
+    if (basketItems.length > 0) {
+      showBasketItems(basketItems);
+    }
+    return;
+  };
 
-      if (basketItems.length > 0) {
-        showBasketItems(allProducts);
-      } else {
-        console.log("Корзина пуста");
-        container.innerHTML = `
+  const basketItems = getBasketFromStorage();
+  console.log("Товаров в корзине:", basketItems.length);
+
+  if (basketItems.length > 0) {
+    showBasketItems(basketItems);
+  } else {
+    console.log("Корзина пуста");
+    container.innerHTML = `
         <div class="empty__cart">
               <div class="empty__img">
                 <img src="./img/image 23 empty.jpg" alt="empty-cart" />
@@ -68,37 +39,28 @@ document.addEventListener("DOMContentLoaded", () => {
               >
             </div>
         `;
-      }
-    })
-    .catch((error) => {
-      console.error("Ошибка", error);
-    });
+  }
 
   function getBasketItemIds() {
     return JSON.parse(localStorage.getItem("basketItem")) || [];
   }
 
-  function showBasketItems(allProducts) {
+  function showBasketItems(basketItems) {
     container.innerHTML = "";
-    const basketItems = getBasketItemIds();
-
     fullPrice = 0;
     fullOldPrice = 0;
 
     for (const basketItem of basketItems) {
-      const product = allProducts.find((p) => p.id === basketItem.productId);
-      if (product) {
-        const basePrice = parseFloat(product.price) || 0;
-        const promotion = product.sale?.percent || 0;
+      const basePrice = parseFloat(basketItem.price) || 0;
+      const promotion = basketItem.discountPercent || 0;
 
-        fullPrice += basketItem.price;
+      fullPrice += basketItem.price;
 
-        if (promotion > 0) {
-          const originalPrice = basketItem.price / (1 - promotion / 100);
-          fullOldPrice += originalPrice;
-        } else {
-          fullOldPrice += basketItem.price;
-        }
+      if (promotion > 0) {
+        const originalPrice = basketItem.price / (1 - promotion / 100);
+        fullOldPrice += originalPrice;
+      } else {
+        fullOldPrice += basketItem.price;
       }
     }
 
@@ -150,44 +112,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     container.appendChild(myCart);
 
-    createCartItem(allProducts, basketItems);
-    ItemRemove(allProducts);
+    createCartItem(basketItems);
+    ItemRemove(basketItems);
     updateTotalCounter();
     transferDataOrder();
   }
 
-  function createCartItem(allProducts, basketItems) {
+  function createCartItem(basketItems) {
     const cartItemsContainer = document.getElementById("cart-items");
 
     cartItemsContainer.innerHTML = "";
 
     for (const basketItem of basketItems) {
-      let product = null;
-      for (const currentProduct of allProducts) {
-        if (currentProduct.id === basketItem.productId) {
-          product = currentProduct;
-          break;
-        }
-      }
-      if (product) {
-        const itemPrice = basketItem.price;
-        const itemOldPrice = basketItem.oldPrice;
-        const hasPromotion =
-          basketItem.hasPromotion && itemOldPrice > itemPrice;
+      const itemPrice = basketItem.price;
+      const itemOldPrice = basketItem.oldPrice;
+      const hasPromotion = basketItem.hasPromotion && itemOldPrice > itemPrice;
 
-        const cartItem = document.createElement("div");
-        cartItem.className = "my__cart__item";
-        cartItem.dataset.productID = product.id;
-        cartItem.innerHTML = `
+      const cartItem = document.createElement("div");
+      cartItem.className = "my__cart__item";
+      cartItem.dataset.productID = basketItem.productId;
+      cartItem.innerHTML = `
       <div class="my__cart__item__wrap">
-      <a href="product__page.html?id=${product.id}">
-      <img src="${product.image_prev}" alt="${
-          product.image_prev
-        }" class="my__cart__item__img">
+      <a href="product__page.html?id=${basketItem.productId}">
+      <img src="${basketItem.image}" alt="${
+        basketItem.image
+      }" class="my__cart__item__img">
       </a>
       <div class="my__cart__item__info">
-      <a href="product__page.html?id=${product.id}">
-      <h3 class="my__cart__item__info__title">${product.title}</h3>
+      <a href="product__page.html?id=${basketItem.productId}">
+      <h3 class="my__cart__item__info__title">${basketItem.title}</h3>
       </a>
       <div class="my__cart__item__info__options"></div>
       </div>
@@ -245,20 +198,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       </div>
     `;
-        cartItemsContainer.appendChild(cartItem);
-        if (basketItem.customWeight) {
-          const weightInput = cartItem.querySelector(".set__weight__input");
-          if (weightInput) {
-            weightInput.value = basketItem.customWeight;
-          }
+      cartItemsContainer.appendChild(cartItem);
+      if (basketItem.customWeight) {
+        const weightInput = cartItem.querySelector(".set__weight__input");
+        if (weightInput) {
+          weightInput.value = basketItem.customWeight;
         }
-
-        weightOptions(product, cartItem, basketItem.packaging);
-        setWeightOptions(product, cartItem, basketItem.packaging, itemPrice);
-        weightInput(product, cartItem);
-        setWeightInput(product, cartItem);
-        addTotalWeight(product, cartItem);
       }
+
+      weightOptions(basketItem, cartItem, basketItem.packaging);
+      setWeightOptions(basketItem, cartItem, basketItem.packaging, itemPrice);
+      weightInput(basketItem, cartItem);
+      setWeightInput(basketItem, cartItem);
+      addTotalWeight(basketItem, cartItem);
     }
   }
 
@@ -302,8 +254,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const oldPriceCounter = cartItem.querySelector(
       ".my__cart__item__old__price"
     );
-    const basePrice = parseFloat(product.price);
-    const discountPercent = product.sale?.percent || 0;
+    const basePrice =
+      parseFloat(product.basePrice) || parseFloat(product.price);
+    const discountPercent = product.discountPercent || 0;
     const discountedPrice = basePrice * (1 - discountPercent / 100);
 
     if (!weightOption.length) return;
@@ -354,7 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
           updateTotalCounter();
-          updateBasketInLocalStorage(window.allProducts);
+          updateBasketInLocalStorage();
           return;
         }
 
@@ -390,7 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         updateTotalCounter();
-        updateBasketInLocalStorage(window.allProducts);
+        updateBasketInLocalStorage();
       });
     }
   }
@@ -469,8 +422,9 @@ document.addEventListener("DOMContentLoaded", () => {
     );
     const counter = cartItem.querySelector(".product__page__pay__counter");
 
-    const basePrice = parseFloat(product.price) || 0;
-    const promotion = product.sale?.percent || 0;
+    const basePrice =
+      parseFloat(product.basePrice) || parseFloat(product.price) || 0;
+    const promotion = product.discountPercent || 0;
     const discountedPrice = basePrice * (1 - promotion / 100);
 
     if (!weightInput || !weightButton || !totalPriceElement) return;
@@ -509,13 +463,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         totalPriceElement.textContent = newPrice.toFixed(2) + " BYN";
-        oldPriceElement.textContent = newOldPrice.toFixed(2) + " BYN";
+        if (oldPriceElement) {
+          oldPriceElement.textContent = newOldPrice.toFixed(2) + " BYN";
+        }
 
         fullPrice = fullPrice - currentPrice + newPrice;
         fullOldPrice = fullOldPrice - currentOldPrice + newOldPrice;
 
         updateTotalCounter();
-        updateBasketInLocalStorage(window.allProducts);
+        updateBasketInLocalStorage();
 
         weightInput.value = "";
         const setWeightElements = cartItem.querySelector(".set__weight");
@@ -538,8 +494,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let count = parseInt(counter.textContent) || 1;
     counter.textContent = count;
 
-    const basePrice = parseFloat(product.price) || 0;
-    const promotion = product.sale?.percent || 0;
+    const basePrice =
+      parseFloat(product.basePrice) || parseFloat(product.price) || 0;
+    const promotion = product.discountPercent || 0;
 
     add.addEventListener("click", function () {
       const currentTotalPrice = parseFloat(
@@ -596,7 +553,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       updateTotalCounter();
-      updateBasketInLocalStorage(window.allProducts);
+      updateBasketInLocalStorage();
     });
 
     takeAway.addEventListener("click", function () {
@@ -655,7 +612,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         updateTotalCounter();
-        updateBasketInLocalStorage(window.allProducts);
+        updateBasketInLocalStorage();
       }
     });
   }
@@ -672,7 +629,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const totalProducts = cartItems.length;
 
-    totalPriceElement.textContent = fullPrice.toFixed(0) + " BYN";
+    if (totalPriceElement) {
+      totalPriceElement.textContent = fullPrice.toFixed(0) + " BYN";
+    }
 
     let oldPriceElement = document.querySelector(
       ".my__cart__old__total__price"
@@ -694,21 +653,25 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!oldPriceElement) {
         oldPriceElement = document.createElement("span");
         oldPriceElement.className = "my__cart__old__total__price";
-        totalPriceElement.after(oldPriceElement);
+        if (totalPriceElement) {
+          totalPriceElement.after(oldPriceElement);
+        }
       }
       oldPriceElement.textContent = fullOldPrice.toFixed(0) + " BYN";
     } else if (oldPriceElement) {
       oldPriceElement.remove();
     }
 
-    let productText = "товаров";
-    if (totalProducts === 1) productText = "товар";
-    else if (totalProducts >= 2 && totalProducts <= 4) productText = "товара";
+    if (totalProductElement) {
+      let productText = "товаров";
+      if (totalProducts === 1) productText = "товар";
+      else if (totalProducts >= 2 && totalProducts <= 4) productText = "товара";
 
-    totalProductElement.textContent = totalProducts + " " + productText;
+      totalProductElement.textContent = totalProducts + " " + productText;
+    }
   }
 
-  function ItemRemove(allProducts) {
+  function ItemRemove(basketItems) {
     const removeButtons = document.querySelectorAll(".my__cart__item__remove");
 
     for (const button of removeButtons) {
@@ -724,14 +687,14 @@ document.addEventListener("DOMContentLoaded", () => {
             .textContent.replace(" BYN", "")
         );
 
-        const product = allProducts.find((p) => p.id === cartID);
-        const discountPercent = product ? product.sale?.percent || 0 : 0;
+        const product = basketItems.find((p) => p.productId === cartID);
+        const discountPercent = product ? product.discountPercent || 0 : 0;
 
-        let basketItems = JSON.parse(localStorage.getItem("basketItem")) || [];
+        let storedItems = JSON.parse(localStorage.getItem("basketItem")) || [];
         let updateBasket = [];
 
         let hasRemovedOne = false;
-        for (const item of basketItems) {
+        for (const item of storedItems) {
           if (item.productId === cartID && hasRemovedOne === false) {
             hasRemovedOne = true;
           } else {
@@ -772,63 +735,71 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         updateBasketCounter();
+        if (typeof window.updateBasketCounter === "function") {
+          window.updateBasketCounter();
+        }
         console.log("Товар удален! ID:", cartID);
       });
     }
   }
 
-  function updateBasketInLocalStorage(allProducts) {
-    const basketItems = document.querySelectorAll(".my__cart__item");
+  function updateBasketInLocalStorage() {
+    const basketItems = getBasketFromStorage();
+    const cartItems = document.querySelectorAll(".my__cart__item");
     const updatedBasket = [];
 
-    const currentBasket = JSON.parse(localStorage.getItem("basketItem")) || [];
+    for (let i = 0; i < cartItems.length; i++) {
+      const cartItem = cartItems[i];
+      const productId = parseInt(cartItem.dataset.productID);
 
-    for (const item of basketItems) {
-      const productId = parseInt(item.dataset.productID);
+      const originalItem = basketItems.find(
+        (item) => item.productId === productId
+      );
+      if (!originalItem) continue;
+
       const price = parseFloat(
-        item
+        cartItem
           .querySelector(".my__cart__item__price")
           .textContent.replace(" BYN", "")
       );
+
       const counter = parseInt(
-        item.querySelector(".product__page__pay__counter").textContent
+        cartItem.querySelector(".product__page__pay__counter").textContent
       );
 
-      const oldItem = currentBasket.find(
-        (item) => item.productId === productId
+      const oldPriceElement = cartItem.querySelector(
+        ".my__cart__item__old__price"
       );
-
-      const oldPriceElement = item.querySelector(".my__cart__item__old__price");
       const hasPromotion = oldPriceElement !== null;
 
       let oldPrice = price;
       if (oldPriceElement) {
         oldPrice = parseFloat(oldPriceElement.textContent.replace(" BYN", ""));
-      } else if (oldItem && oldItem.oldPrice) {
-        oldPrice = oldItem.oldPrice;
+      } else if (originalItem.oldPrice) {
+        oldPrice = originalItem.oldPrice;
       }
 
       let packaging = null;
-      const activeOption = item.querySelector(
+      const activeOption = cartItem.querySelector(
         ".my__cart__item__info__option__active"
       );
       if (activeOption) {
         packaging = activeOption.textContent.trim();
       } else {
-        packaging = null;
+        packaging = originalItem.packaging;
       }
 
-      const weightInput = item.querySelector(".set__weight__input");
-      let customWeight = null;
+      const weightInput = cartItem.querySelector(".set__weight__input");
+      let customWeight = originalItem.customWeight || null;
       if (weightInput && weightInput.value) {
         customWeight = weightInput.value;
       }
 
       updatedBasket.push({
-        productId: productId,
-        hasPromotion: hasPromotion,
+        ...originalItem,
         price: price,
         oldPrice: oldPrice,
+        hasPromotion: hasPromotion,
         packaging: packaging,
         count: counter,
         customWeight: customWeight,
@@ -842,10 +813,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function transferDataOrder() {
     const orderButton = document.querySelector(".my__cart__btn");
 
+    if (!orderButton) return;
+
     orderButton.addEventListener("click", function (e) {
       e.preventDefault();
 
-      const basketItems = getBasketItemIds();
+      const basketItems = getBasketFromStorage();
 
       if (basketItems.length === 0) {
         alert("Корзина пуста! Добавьте товары перед оформлением заказа.");
@@ -869,5 +842,13 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("orderData", JSON.stringify(orderData));
       window.location.href = "order.html";
     });
+  }
+
+  function updateBasketCounter() {
+    const basketItems = getBasketFromStorage();
+    const basketCounter = document.querySelector(".basket__count");
+    if (basketCounter) {
+      basketCounter.textContent = basketItems.length;
+    }
   }
 });

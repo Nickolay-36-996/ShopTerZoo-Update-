@@ -529,11 +529,14 @@ window.addToBasketAndModal = function (product, productPage) {
       productId: parseInt(productId),
       price: price,
       oldPrice: oldPrice,
-      count: count,
       packaging: packaging,
       hasPromotion: hasPromotion,
       title: product.title,
       image: product.image_prev,
+      basePrice: parseFloat(product.price) || 0,
+      discountPercent: product.sale?.percent || 0,
+      countitemproduct_set: product.countitemproduct_set || [],
+      count: 1,
     };
 
     let basketItems = JSON.parse(localStorage.getItem("basketItem")) || [];
