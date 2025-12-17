@@ -29,46 +29,46 @@ document.addEventListener("DOMContentLoaded", () => {
     nav.appendChild(articleNavItem);
   }
 
-  async function fetchAllProducts() {
-    let allProducts = [];
-    let nextUrl =
-      "https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create";
-
+  async function loadProductPage(id) {
     try {
-      while (nextUrl) {
-        const response = await fetch(nextUrl);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
+      const apiUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_list/?id__in=${id}`;
 
-        if (data.results && data.results.length > 0) {
-          allProducts = [...allProducts, ...data.results];
-        }
+      console.log("Загружаю товар по URL:", apiUrl);
 
-        nextUrl = data.next;
+      const response = await fetch(apiUrl);
+
+      if (!response.ok) {
+        throw new Error(`Ошибка сервера: ${response.status}`);
       }
-      return allProducts;
+
+      const data = await response.json();
+
+      if (data.results && data.results.length > 0) {
+        return data.results[0];
+      } else {
+        throw new Error("Товар не найден в ответе сервера");
+      }
     } catch (error) {
-      console.error("Ошибка при загрузке товаров:", error);
+      console.error("Ошибка загрузки товара:", error);
       throw error;
     }
   }
 
-  fetchAllProducts()
-    .then((allProducts) => {
-      console.log("Всего товаров загружено:", allProducts.length);
-      const product = allProducts.find((item) => item.id === productId);
-
-      if (product) {
-        createProductPage(product);
-      } else {
-        productPage.innerHTML = `<div class="no__product"><h3>Продукт не найден</h3></div>`;
-      }
+  loadProductPage(productId)
+    .then((product) => {
+      console.log("✅ Товар загружен:", product.title);
+      createProductPage(product);
     })
     .catch((error) => {
-      console.error("Ошибка:", error);
-      productPage.innerHTML = `<p>Ошибка загрузки товара: ${error.message}</p>`;
+      console.error("❌ Ошибка:", error);
+      productPage.innerHTML = `
+      <div class="no__product">
+        <h3>Не удалось загрузить товар</h3>
+        <p>${error.message}</p>
+        <p>ID товара: ${productId}</p>
+        <a href="catalog.html">Вернуться в каталог</a>
+      </div>
+    `;
     });
 
   function createProductPage(product) {
@@ -974,9 +974,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       "new__products__card__quantity__active"
                     );
                   }
-                  this.classList.add(
-                    "new__products__card__quantity__active"
-                  );
+                  this.classList.add("new__products__card__quantity__active");
 
                   if (discountPercent > 0) {
                     newPrice = optionQuantity * discountedPrice;
