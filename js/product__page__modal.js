@@ -505,7 +505,10 @@ window.addToBasketAndModal = function (product, productPage) {
     }
 
     if (quantityActive) {
-      packaging = quantityActive.textContent;
+      const weightValueElement = quantityActive.querySelector(".weight__value");
+      if (weightValueElement) {
+        packaging = weightValueElement.textContent.trim();
+      }
     }
 
     if (priceElement) {
