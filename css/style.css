@@ -4114,6 +4114,13 @@ body {
 }
 
 @media (max-width: 992px) {
+  .stub__catalog__title {
+    font-size: 16px;
+    line-height: 130%;
+  }
+  .stub__catalog__reset__filters {
+    padding: 8px 16px;
+  }
   .products__catalog__title {
     font-size: 34px;
   }

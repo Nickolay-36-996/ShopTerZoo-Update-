@@ -6,6 +6,14 @@ window.promotionalFilter = function () {
     e.preventDefault();
     e.stopPropagation();
 
+    if (window.innerWidth <= 992) {
+      const indicator = this.querySelector(".promotional__item__indicator");
+      if (indicator) {
+        indicator.classList.toggle("promotional__item__indicator__active");
+      }
+      return;
+    }
+
     const indicator = this.querySelector(".promotional__item__indicator");
     if (indicator) {
       indicator.classList.toggle("promotional__item__indicator__active");

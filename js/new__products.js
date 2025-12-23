@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let saveTranslate = 0;
   let cardWidth = 0;
 
-  fetch("https://oliver1ck.pythonanywhere.com/api/get_products_list/")
+  fetch("https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&page=1")
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP Error! status: ${response.status}`);

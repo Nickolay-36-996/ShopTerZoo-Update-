@@ -23,6 +23,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const isCatalogPage = window.location.pathname.includes("catalog.html");
     const isIndexPage = window.location.pathname.includes("index.html");
+    const isArticlesPage = window.location.pathname.includes(
+      "articles__pages.html"
+    );
 
     if (isIndexPage) {
       for (const category of animalList) {
@@ -78,6 +81,31 @@ document.addEventListener("DOMContentLoaded", () => {
               break;
             }
           }
+        });
+      }
+    } else if (isArticlesPage) {
+      for (const category of animalList) {
+        const animalItem = document.createElement("button");
+        animalItem.className = "animal__category__catalog";
+        animalItem.innerHTML = `
+            <img src="${category.image}" alt="${category.title}">
+            <p class="animal__category__catalog__title">${category.type}</p>
+            `;
+
+        animalContainer.appendChild(animalItem);
+
+        animalItem.addEventListener("click", function () {
+          const allAnimalItems = document.querySelectorAll(
+            ".animal__category__catalog"
+          );
+
+          for (const item of allAnimalItems) {
+            item.classList.remove("animal__category__catalog__active");
+          }
+
+          this.classList.add("animal__category__catalog__active");
+
+          
         });
       }
     }

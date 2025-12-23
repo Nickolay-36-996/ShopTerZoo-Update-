@@ -343,6 +343,10 @@ window.filterCategoryAnimal = function () {
           typeTitle.textContent = "Тип товара";
         }
 
+        if (typeof window.applyFiltersForMobile === "function") {
+          window.applyFiltersForMobile();
+        }
+
         if (filterAnimalList && categoryTypes) {
           filterAnimalList.style.display = "none";
 
@@ -364,6 +368,40 @@ window.filterCategoryAnimal = function () {
             if (subcategoryItem) {
               e.stopPropagation();
               e.preventDefault();
+
+              if (window.innerWidth <= 992) {
+                const currentSubcategoryIndicator =
+                  subcategoryItem.querySelector(
+                    ".products__catalog__filter__subcategory__indicator"
+                  );
+
+                currentSubcategoryIndicator.classList.toggle(
+                  "products__catalog__filter__subcategory__indicator__active"
+                );
+
+                const parentCategory = subcategoryItem.closest(
+                  ".food__category__item"
+                );
+                const parentIndicator = parentCategory.querySelector(
+                  ".products__catalog__filter__type__indicator"
+                );
+
+                const activeSubcategoriesInParent =
+                  parentCategory.querySelectorAll(
+                    ".products__catalog__filter__subcategory__indicator__active"
+                  );
+
+                if (activeSubcategoriesInParent.length > 0) {
+                  parentIndicator.classList.add(
+                    "products__catalog__filter__type__indicator__active"
+                  );
+                } else {
+                  parentIndicator.classList.remove(
+                    "products__catalog__filter__type__indicator__active"
+                  );
+                }
+                return;
+              }
 
               const allCategoryIndicators = document.querySelectorAll(
                 ".products__catalog__filter__type__indicator"
@@ -557,6 +595,39 @@ window.filterCategoryAnimal = function () {
               categoryContain.addEventListener("click", function (e) {
                 e.preventDefault();
                 e.stopPropagation();
+
+                if (window.innerWidth <= 992) {
+                  const parentIndicator = this.querySelector(
+                    ".products__catalog__filter__type__indicator"
+                  );
+
+                  parentIndicator.classList.toggle(
+                    "products__catalog__filter__type__indicator__active"
+                  );
+
+                  const subcategoryIndicators = listItem.querySelectorAll(
+                    ".products__catalog__filter__subcategory__indicator"
+                  );
+
+                  if (
+                    parentIndicator.classList.contains(
+                      "products__catalog__filter__type__indicator__active"
+                    )
+                  ) {
+                    for (const indicator of subcategoryIndicators) {
+                      indicator.classList.add(
+                        "products__catalog__filter__subcategory__indicator__active"
+                      );
+                    }
+                  } else {
+                    for (const indicator of subcategoryIndicators) {
+                      indicator.classList.remove(
+                        "products__catalog__filter__subcategory__indicator__active"
+                      );
+                    }
+                  }
+                  return;
+                }
 
                 const parentIndicator = this.querySelector(
                   ".products__catalog__filter__type__indicator"
@@ -755,6 +826,25 @@ window.filterCategoryAnimal = function () {
               listItem.addEventListener("click", function (e) {
                 e.preventDefault();
                 e.stopPropagation();
+
+                if (window.innerWidth <= 992) {
+                  const currentIndicator = this.querySelector(
+                    ".products__catalog__filter__type__indicator"
+                  );
+                  const categoryIndicators = document.querySelectorAll(
+                    ".products__catalog__filter__type__indicator"
+                  );
+                  for (const indicator of categoryIndicators) {
+                    indicator.classList.remove(
+                      "products__catalog__filter__type__indicator__active"
+                    );
+                  }
+
+                  currentIndicator.classList.add(
+                    "products__catalog__filter__type__indicator__active"
+                  );
+                  return;
+                }
 
                 const currentIndicator = this.querySelector(
                   ".products__catalog__filter__type__indicator"
@@ -1013,6 +1103,16 @@ window.filterBrandProducts = function (animalId = null) {
       filterBrandElement.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
+
+        if (window.innerWidth <= 992) {
+          const indicator = this.querySelector(
+            ".products__catalog__filter__brand__indicator"
+          );
+          indicator.classList.toggle(
+            "products__catalog__filter__brand__indicator__active"
+          );
+          return;
+        }
 
         const indicator = this.querySelector(
           ".products__catalog__filter__brand__indicator"

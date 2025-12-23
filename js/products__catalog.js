@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
         autoApplyFilter();
         window.filterBrandProducts();
         window.promotionalFilter();
+        window.applyFiltersForMobile();
       })
       .catch((error) => {
         console.error("Ошибка fetch:", error);
@@ -349,6 +350,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (typeTitle) {
           typeTitle.textContent = "Выберите животного";
+        }
+
+        if (typeof window.applyFiltersForMobile === "function") {
+          window.applyFiltersForMobile();
         }
 
         const catalogTitle = document.querySelector(

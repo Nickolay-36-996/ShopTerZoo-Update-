@@ -53,5 +53,25 @@ document.addEventListener("DOMContentLoaded", () => {
     burger.addEventListener("click", handleBurgerClick);
   }
 
+  window.applyFiltersForMobile = function () {
+    const applyFiltersBtn = document.querySelector(".apply__filter__mobile");
+    const typeTitle = document.querySelector(
+      ".products__catalog__filter__title"
+    );
+    const isMobile = window.innerWidth <= 992;
+
+    if (!applyFiltersBtn) return;
+
+    if (typeTitle && typeTitle.textContent.trim() === "Тип товара") {
+      applyFiltersBtn.style.display = "block";
+    } else {
+      applyFiltersBtn.style.display = "none";
+    }
+
+    if (isMobile && applyFiltersBtn.style.display === "block") {
+      const typeFilters = document.querySelectorAll('.products__catalog__filter__type__list__item');
+    }
+  };
+
   sideBarFilters();
 });

@@ -21,49 +21,35 @@ document.addEventListener("DOMContentLoaded", () => {
     return newArray;
   }
 
-  async function fetchAllPopularProducts() {
-    let allProducts = [];
-    let nextUrl =
-      "https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create";
-
-    try {
-      while (nextUrl) {
-        const response = await fetch(nextUrl);
-        if (!response.ok)
-          throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        if (data.results && data.results.length > 0) {
-          allProducts = [...allProducts, ...data.results];
-        }
-        nextUrl = data.next;
+  fetch(
+    "https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create&page=3"
+  )
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP Error! status: ${response.status}`);
       }
-      return allProducts;
-    } catch (error) {
-      console.error("Error fetching all products:", error);
-      return [];
-    }
-  }
-
-  fetchAllPopularProducts()
+      return response.json();
+    })
     .then((data) => {
-      console.log("Все товары загружены:", data);
+      console.log("Данные товаров:", data);
       container.innerHTML = "";
-
-      if (data && data.length > 0) {
-        cardsData = data.sort(
-          (a, b) => (b.sales_counter || 0) - (a.sales_counter || 0)
-        );
-
-        cardsData = shuffleArray(cardsData);
-        cardsData = cardsData.filter((product) => product.sales_counter > 0);
-
+      if (data.results && data.results.length > 0) {
+        cardsData = data.results;
+        function shuffleArray(array) {
+          for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+          }
+          return array;
+        }
+        shuffleArray(cardsData);
         createCards();
-        addToBasket(data);
-        buyClick(cardsData);
         if (container.children.length > 0) {
           cardWidth = container.children[0].clientWidth;
           initSliderControls();
         }
+        addToBasket(cardsData);
+        buyClick(cardsData);
       } else {
         container.innerHTML = "<p>Нет данных о товарах</p>";
       }
