@@ -58,7 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const typeTitle = document.querySelector(
       ".products__catalog__filter__title"
     );
-    const isMobile = window.innerWidth <= 992;
 
     if (!applyFiltersBtn) return;
 
@@ -68,9 +67,24 @@ document.addEventListener("DOMContentLoaded", () => {
       applyFiltersBtn.style.display = "none";
     }
 
-    if (isMobile && applyFiltersBtn.style.display === "block") {
-      const typeFilters = document.querySelectorAll('.products__catalog__filter__type__list__item');
-    }
+    window.mobileApplyFilters = false;
+
+    applyFiltersBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      window.mobileApplyFilters = true;
+
+      console.log(window.mobileApplyFilters);
+
+      const sideBar = document.querySelector(
+        ".products__catalog__products__filter"
+      );
+
+      if (sideBar) {
+        sideBar.classList.remove("products__catalog__products__filter__active");
+      }
+    });
   };
 
   sideBarFilters();
