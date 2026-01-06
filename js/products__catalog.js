@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("page count:", data);
         if (data.results && data.results.length > 0) {
           allProducts = data.results;
+          localStorage.setItem("catalogProducts", JSON.stringify(data.results));
         }
         pagesCount(data);
         productItems(allProducts);

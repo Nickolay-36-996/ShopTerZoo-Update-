@@ -7,13 +7,12 @@ window.promotionalFilter = function () {
     e.stopPropagation();
 
     if (window.innerWidth <= 992) {
-      if (window.mobileApplyFilters === false) {
-        const indicator = this.querySelector(".promotional__item__indicator");
-        if (indicator) {
-          indicator.classList.toggle("promotional__item__indicator__active");
-        }
-        return;
+      const indicator = this.querySelector(".promotional__item__indicator");
+      if (indicator) {
+        indicator.classList.toggle("promotional__item__indicator__active");
       }
+
+      return;
     }
 
     const indicator = this.querySelector(".promotional__item__indicator");

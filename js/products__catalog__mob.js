@@ -58,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const typeTitle = document.querySelector(
       ".products__catalog__filter__title"
     );
+    window.isApplyingFilters = false;
 
     if (!applyFiltersBtn) return;
 
@@ -67,15 +68,66 @@ document.addEventListener("DOMContentLoaded", () => {
       applyFiltersBtn.style.display = "none";
     }
 
-    window.mobileApplyFilters = false;
-
     applyFiltersBtn.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
 
-      window.mobileApplyFilters = true;
+      const productsData = JSON.parse(
+        localStorage.getItem("catalogProducts") || "[]"
+      );
 
-      console.log(window.mobileApplyFilters);
+      const categoryActive = document.querySelector(
+        ".products__catalog__filter__type__indicator__active"
+      );
+      const subcategoryActive = document.querySelector(
+        ".products__catalog__filter__subcategory__indicator__active"
+      );
+      const brandActive = document.querySelector(
+        ".products__catalog__filter__brand__indicator__active"
+      );
+      const promotionalActive = document.querySelector(
+        ".promotional__item__indicator__active"
+      );
+
+      let categoryId = "";
+
+      if (categoryActive) {
+        const categoryItem = categoryActive.closest(
+          ".products__catalog__filter__type__list__item"
+        );
+        const categoryName = categoryItem
+          .querySelector(".products__catalog__filter__type__txt")
+          .textContent.trim();
+
+        const foundProduct = productsData.find((item) => {
+          return item.category.name === categoryName;
+        });
+
+        categoryId += `&category_id__in=${foundProduct.category.id}`;
+      }
+
+      let newUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${categoryId}`;
+
+      fetch(newUrl)
+        .then((response) => {
+          if (!response.ok) throw new Error(`HTTP status: ${response.status}`);
+          return response.json();
+        })
+        .then((filteredData) => {
+          if (typeof window.productItems === "function") {
+            window.productItems(filteredData.results);
+          }
+          if (typeof window.updatePagination === "function") {
+            window.updatePagination(
+              filteredData,
+              1,
+              newUrl.replace("&page=1", "")
+            );
+          }
+        })
+        .catch((error) => {
+          console.error("Ошибка загрузки отфильтрованных товаров:", error);
+        });
 
       const sideBar = document.querySelector(
         ".products__catalog__products__filter"
