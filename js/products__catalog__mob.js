@@ -53,11 +53,17 @@ document.addEventListener("DOMContentLoaded", () => {
     burger.addEventListener("click", handleBurgerClick);
   }
 
-  window.applyFiltersForMobile = function (animalId) {
+  window.applyFiltersForMobile = function () {
     const applyFiltersBtn = document.querySelector(".apply__filter__mobile");
     const typeTitle = document.querySelector(
       ".products__catalog__filter__title"
     );
+
+    if (typeTitle.textContent.trim() === "Выберите животного") {
+      applyFiltersBtn.style.display = "none";
+    } else {
+      applyFiltersBtn.style.display = "block";
+    }
 
     if (!applyFiltersBtn) return;
 
@@ -70,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       const activeAnimalIndicator = document.querySelector(
-        ".products__catalog__filter__type__list__item .products__catalog__filter__type__indicator__active"
+        ".animal__category__catalog__active"
       );
       const categoryActive = document.querySelector(
         ".products__catalog__filter__type__indicator__active"
@@ -85,26 +91,29 @@ document.addEventListener("DOMContentLoaded", () => {
         ".promotional__item__indicator__active"
       );
 
+      const animalMap = {
+        Собаки: "1",
+        Кошки: "2",
+        Грызуны: "3",
+        Птицы: "4",
+        Рыбки: "5",
+      };
+
       let categoryId = "";
       let subCategoryId = "";
       let filterAnimalId = "";
 
       if (activeAnimalIndicator) {
-        const animalText = activeAnimalIndicator
-          .closest(".products__catalog__filter__type__list__item")
-          .querySelector(".products__catalog__filter__type__txt")
-          .textContent.trim()
-          .toLowerCase();
+        const activeAnimalItem = activeAnimalIndicator.closest(
+          ".animal__category__catalog"
+        );
+        const activeAnimalTxt = activeAnimalItem
+          .querySelector(".animal__category__catalog__title")
+          .textContent.trim();
 
-        const animalMap = {
-          собаки: "1",
-          кошки: "2",
-          грызуны: "3",
-          птицы: "4",
-          рыбки: "5",
-        };
+        const currentAnimalFilter = animalMap[activeAnimalTxt];
 
-        filterAnimalId = `&animal__in=${animalMap[animalText]}`;
+        filterAnimalId += `&animal__in=${currentAnimalFilter}`;
       }
 
       if (categoryActive) {
