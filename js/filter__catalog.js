@@ -123,6 +123,25 @@ window.filterCategoryAnimal = function () {
           "products__catalog__filter__type__indicator__active"
         );
 
+      if (window.innerWidth <= 992 && isMainAnimalList) {
+        const allAnimalIndicators = document.querySelectorAll(
+          ".products__catalog__filter__type__list__item .products__catalog__filter__type__indicator"
+        );
+        for (const ind of allAnimalIndicators) {
+          ind.classList.remove(
+            "products__catalog__filter__type__indicator__active"
+          );
+        }
+
+        if (currentIndicator) {
+          currentIndicator.classList.add(
+            "products__catalog__filter__type__indicator__active"
+          );
+        }
+
+        return;
+      }
+
       if (isAlreadyActive && isMainAnimalList) {
         if (
           window.currentOrder &&

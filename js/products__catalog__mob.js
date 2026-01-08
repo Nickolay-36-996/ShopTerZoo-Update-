@@ -53,33 +53,29 @@ document.addEventListener("DOMContentLoaded", () => {
     burger.addEventListener("click", handleBurgerClick);
   }
 
-  window.applyFiltersForMobile = function () {
+  window.applyFiltersForMobile = function (animalId) {
     const applyFiltersBtn = document.querySelector(".apply__filter__mobile");
     const typeTitle = document.querySelector(
       ".products__catalog__filter__title"
     );
-    window.isApplyingFilters = false;
 
     if (!applyFiltersBtn) return;
 
-    if (typeTitle && typeTitle.textContent.trim() === "Тип товара") {
-      applyFiltersBtn.style.display = "block";
-    } else {
-      applyFiltersBtn.style.display = "none";
-    }
-
-    applyFiltersBtn.addEventListener("click", function (e) {
+    applyFiltersBtn.addEventListener("click", async function (e) {
       e.preventDefault();
       e.stopPropagation();
 
-      const productsData = JSON.parse(
+      const allProducts = JSON.parse(
         localStorage.getItem("catalogProducts") || "[]"
       );
 
+      const activeAnimalIndicator = document.querySelector(
+        ".products__catalog__filter__type__list__item .products__catalog__filter__type__indicator__active"
+      );
       const categoryActive = document.querySelector(
         ".products__catalog__filter__type__indicator__active"
       );
-      const subcategoryActive = document.querySelector(
+      const subcategoryActive = document.querySelectorAll(
         ".products__catalog__filter__subcategory__indicator__active"
       );
       const brandActive = document.querySelector(
@@ -90,6 +86,26 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       let categoryId = "";
+      let subCategoryId = "";
+      let filterAnimalId = "";
+
+      if (activeAnimalIndicator) {
+        const animalText = activeAnimalIndicator
+          .closest(".products__catalog__filter__type__list__item")
+          .querySelector(".products__catalog__filter__type__txt")
+          .textContent.trim()
+          .toLowerCase();
+
+        const animalMap = {
+          собаки: "1",
+          кошки: "2",
+          грызуны: "3",
+          птицы: "4",
+          рыбки: "5",
+        };
+
+        filterAnimalId = `&animal__in=${animalMap[animalText]}`;
+      }
 
       if (categoryActive) {
         const categoryItem = categoryActive.closest(
@@ -99,14 +115,37 @@ document.addEventListener("DOMContentLoaded", () => {
           .querySelector(".products__catalog__filter__type__txt")
           .textContent.trim();
 
-        const foundProduct = productsData.find((item) => {
-          return item.category.name === categoryName;
+        const foundProduct = allProducts.find((item) => {
+          return item.category && item.category.name === categoryName;
         });
 
-        categoryId += `&category_id__in=${foundProduct.category.id}`;
+        if (foundProduct && foundProduct.category && foundProduct.category.id) {
+          categoryId += `&category_id__in=${foundProduct.category.id}`;
+        }
       }
 
-      let newUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${categoryId}`;
+      if (subcategoryActive.length > 0) {
+        for (const indicator of subcategoryActive) {
+          const subCategoryItem = indicator.closest(".food__subcategory__item");
+          const subCategoryName = subCategoryItem
+            .querySelector(".products__catalog__filter__brand__txt")
+            .textContent.trim();
+
+          const foundProduct = allProducts.find((item) => {
+            return item.category && item.category.name === subCategoryName;
+          });
+
+          if (
+            foundProduct &&
+            foundProduct.category &&
+            foundProduct.category.id
+          ) {
+            subCategoryId += `&category_id__in=${foundProduct.category.id}`;
+          }
+        }
+      }
+
+      let newUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${filterAnimalId}${categoryId}${subCategoryId}`;
 
       fetch(newUrl)
         .then((response) => {
