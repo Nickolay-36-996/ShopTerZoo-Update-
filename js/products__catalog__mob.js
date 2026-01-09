@@ -103,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let subCategoryId = "";
       let filterAnimalId = "";
       let filterBrandAnimal = "";
+      let filterPromotionalId = "";
 
       if (activeAnimalIndicator) {
         const activeAnimalItem = activeAnimalIndicator.closest(
@@ -173,7 +174,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      let newUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${filterAnimalId}${categoryId}${subCategoryId}${filterBrandAnimal}`;
+      if (promotionalActive) {
+        filterPromotionalId += `&sale__percent__gt=0`;
+      }
+
+      let newUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${filterAnimalId}${categoryId}${subCategoryId}${filterBrandAnimal}${filterPromotionalId}`;
 
       fetch(newUrl)
         .then((response) => {

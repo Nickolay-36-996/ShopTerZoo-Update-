@@ -1,5 +1,17 @@
 "use strict";
 window.promotionalFilter = function () {
+  const filterPromotionalDisplay = document.querySelector(".promotional__item");
+  const typeTitle = document.querySelector(".products__catalog__filter__title");
+
+  // if (
+  //   innerWidth <= 992 &&
+  //   typeTitle.textContent.trim() === "Выберите животного"
+  // ) {
+  //   filterPromotionalDisplay.style.display = "none";
+  // } else {
+  //   filterPromotionalDisplay.style.display = "flex";
+  // }
+
   const filterPromotional = document.querySelector(".promotional__item__lbl");
 
   filterPromotional.addEventListener("click", async function (e) {

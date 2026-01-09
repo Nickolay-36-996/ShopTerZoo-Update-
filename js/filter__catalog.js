@@ -1002,6 +1002,20 @@ window.filterCategoryAnimal = function () {
 };
 
 window.filterBrandProducts = function (animalId = null) {
+  const filterBrandDisplay = document.querySelector(
+    ".products__catalog__filter__brand"
+  );
+  const typeTitle = document.querySelector(".products__catalog__filter__title");
+
+  if (
+    innerWidth <= 992 &&
+    typeTitle.textContent.trim() === "Выберите животного"
+  ) {
+    filterBrandDisplay.style.display = "none";
+  } else {
+    filterBrandDisplay.style.display = "flex";
+  }
+
   const filterBrandContainer = document.querySelector(
     ".products__catalog__filter__brand__list"
   );
