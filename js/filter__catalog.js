@@ -996,6 +996,7 @@ window.filterCategoryAnimal = function () {
             }
           }
         }
+        promotionalFilter();
       }
     });
   }
@@ -1318,3 +1319,8 @@ window.filterBrandProducts = function (animalId = null) {
     });
   }
 };
+
+window.addEventListener("resize", () => {
+  promotionalFilter();
+  filterBrandProducts();
+});
