@@ -90,6 +90,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const promotionalActive = document.querySelector(
         ".promotional__item__indicator__active"
       );
+      const sortingTitle = document.querySelector(
+        ".products__catalog__sort__select__active"
+      );
 
       const animalMap = {
         Собаки: "1",
@@ -99,11 +102,21 @@ document.addEventListener("DOMContentLoaded", () => {
         Рыбки: "5",
       };
 
+      const selectMap = {
+        "дате добавления": "order=date_create",
+        "названию: «от А до Я»": "order=title",
+        "названию: «от Я до А»": "order=-title",
+        "цене по возр.": "order=price",
+        "цене по убыв.": "order=-price",
+        популярности: "order=-sales_counter",
+      };
+
       let categoryId = "";
       let subCategoryId = "";
       let filterAnimalId = "";
       let filterBrandAnimal = "";
       let filterPromotionalId = "";
+      let sortingID = "";
 
       if (activeAnimalIndicator) {
         const activeAnimalItem = activeAnimalIndicator.closest(
@@ -116,6 +129,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const currentAnimalFilter = animalMap[activeAnimalTxt];
 
         filterAnimalId += `&animal__in=${currentAnimalFilter}`;
+      }
+
+      if (sortingTitle) {
+        const sortingTxt = sortingTitle.textContent.trim();
+        const sortingActive = selectMap[sortingTxt];
+
+        sortingID += `${sortingActive}`;
       }
 
       if (categoryActive) {
@@ -178,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
         filterPromotionalId += `&sale__percent__gt=0`;
       }
 
-      let newUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?order=date_create${filterAnimalId}${categoryId}${subCategoryId}${filterBrandAnimal}${filterPromotionalId}`;
+      let newUrl = `https://oliver1ck.pythonanywhere.com/api/get_products_filter/?${sortingID}${filterAnimalId}${categoryId}${subCategoryId}${filterBrandAnimal}${filterPromotionalId}`;
 
       fetch(newUrl)
         .then((response) => {
