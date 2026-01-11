@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.stopPropagation();
 
       const allProducts = JSON.parse(
-        localStorage.getItem("catalogProducts") || "[]"
+        localStorage.getItem("catalogFilters") || "[]"
       );
 
       const activeAnimalIndicator = document.querySelector(

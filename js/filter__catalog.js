@@ -20,6 +20,7 @@ window.getAllFilteredProducts = async function (animalId) {
     console.log(
       `Загружены все товары категории животного: ${allProducts.length} шт.`
     );
+    localStorage.setItem("catalogFilters", JSON.stringify(allProducts));
     return allProducts;
   } catch (error) {
     console.error("Ошибка загрузки товаров категории:", error);
