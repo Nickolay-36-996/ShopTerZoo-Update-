@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const isCatalogPage = window.location.pathname.includes("catalog.html");
     const isIndexPage = window.location.pathname.includes("index.html");
     const isArticlesPage = window.location.pathname.includes(
-      "articles__pages.html"
+      "articles__pages.html",
     );
 
     if (isIndexPage) {
@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         animalItem.addEventListener("click", function () {
           const allAnimalItems = document.querySelectorAll(
-            ".animal__category__catalog"
+            ".animal__category__catalog",
           );
 
           for (const item of allAnimalItems) {
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const selectedCategory = category.type.toLowerCase();
           const filterItems = document.querySelectorAll(
-            ".products__catalog__filter__type__list__item"
+            ".products__catalog__filter__type__list__item",
           );
 
           for (let filter of filterItems) {
@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         animalItem.addEventListener("click", function () {
           const allAnimalItems = document.querySelectorAll(
-            ".animal__category__catalog"
+            ".animal__category__catalog",
           );
 
           for (const item of allAnimalItems) {
@@ -104,8 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
           this.classList.add("animal__category__catalog__active");
-
-          
+          filterArticlesByAnimal(category.id);
         });
       }
     }

@@ -4306,6 +4306,11 @@ body {
   transition: all 0.3s ease;
 }
 
+.articles__pages__show__more__btn:hover {
+  background-color: #00a0ac;
+  color: white;
+}
+
 .img__articles__pages {
   max-width: none;
   max-height: none;
